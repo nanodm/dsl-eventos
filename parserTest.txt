@@ -1,0 +1,2 @@
+> parse (totParser agregarP) "" "agregar 21/12/2020 00:00 mi cumple"
+Right (Add1 2020-12-21 00:00:00 UTC "mi cumple")
