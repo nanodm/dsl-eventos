@@ -14,8 +14,8 @@ evalComm :: Comm -> IO ()
 evalComm Skip = return ()
 evalComm (Seq com1 com2) = do evalComm com1
                               evalComm com2
-evalComm (Add1 date desc) = agregar (printDate date) (printTime date) desc
-evalComm (Add2 date1 date2 desc) = if date1 >= date2
+evalComm (Add date desc) = agregar (printDate date) (printTime date) desc
+evalComm (AddBetween date1 date2 desc) = if date1 >= date2
                                    then putStrLn "Que haces?"
                                    else agregarAux date1 date2 desc
 

@@ -58,7 +58,7 @@ agregarP :: Parser Comm
 agregarP = do  reserved lis "agregar"
                date <- dateP
                desc <- str
-               return (Add1 date desc)
+               return (Add date desc)
 
 -- agregar 09/09/2020 -r 11/09/2020 12:50:00 "clases";
 agregarEntreFechasP :: Parser Comm
@@ -67,7 +67,7 @@ agregarEntreFechasP = do reserved lis "agregarEntre"
                          day2 <- dayP
                          hour <- hourP
                          desc <- str
-                         return (Add2 (UTCTime day1 hour) (UTCTime day2 hour) desc)
+                         return (AddBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
 
 dateP :: Parser UTCTime
 dateP = do
@@ -103,4 +103,3 @@ str = do sp <- many space
          let string = (sp)++[x]++(sp2)++(concat xs)
              string2 = reverse $ removeSpaces $ reverse string
          return string2
-
