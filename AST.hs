@@ -14,6 +14,8 @@ type NombreArchivo = String
 --                deriving Show
 
 -- Comandos para agregar a un archivo
-data AddComm = Add1 UTCTime Descripcion -- agrega un evento en una fecha
-               | Add2 UTCTime UTCTime Descripcion -- agrega el mismo evento entre 2 fechas
+data Comm = Add1 UTCTime Descripcion -- agrega un evento en una fecha
+            | Add2 UTCTime UTCTime Descripcion -- agrega el mismo evento entre 2 fechas
+            | Seq Comm Comm
+            | Skip
  deriving Show

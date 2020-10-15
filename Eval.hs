@@ -7,7 +7,8 @@ import Data.Char
 import Data.Dates
 import Data.Time
 
-evalComm :: AddComm -> IO ()
+evalComm :: Comm -> IO ()
+evalComm Skip = return ()
 evalComm (Add1 date desc) = agregar (printDate date) (printTime date) desc
 evalComm (Add2 date1 date2 desc) = agregarAux date1 date2 desc
 

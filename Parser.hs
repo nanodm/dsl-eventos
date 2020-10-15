@@ -21,31 +21,49 @@ totParser p = do
                 eof
                 return t
 
--- parseThis :: String -> Either ParseError Comm
--- parseThis s = parse parseComm "" s
-
--- parseComm :: Parser Comm
--- parseComm =     try agregarP
 
 lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "crear", "abrir"]
+                                  , reservedNames = ["agregar", "agregarEntre", "skip", "crear", "abrir"]
                                   , reservedOpNames = ["/","-",":"]
                                   })
 
-agregarP :: Parser AddComm
+parseComm :: SourceName -> String -> Either ParseError Comm
+parseComm = parse (totParser comm)
+
+comm = parens lis comm
+     <|> sequenceOfComm
+
+sequenceOfComm =
+  do list <- (sepBy1 comm' (semi lis))
+     -- If there's only one statement return it without using Seq.
+--     return $ if (length list) == 1 then head list else Seq list
+     return $ (listToSeq list)
+
+comm' :: Parser Comm
+comm' =    agregarP
+       <|> agregarEntreFechasP
+       <|> skipComm
+
+listToSeq [] = Skip
+listToSeq [x] = x
+listToSeq (x:xs) = Seq x (listToSeq xs)
+
+skipComm :: Parser Comm
+skipComm = reserved lis "skip" >> return Skip
+
+agregarP :: Parser Comm
 agregarP = do  reserved lis "agregar"
                date <- dateP
                desc <- str
                return (Add1 date desc)
 
 -- agregar 09/09/2020 -r 11/09/2020 12:50:00 "clases";
-agregarEntreFechasP :: Parser AddComm
-agregarEntreFechasP = do reserved lis "agregar"
+agregarEntreFechasP :: Parser Comm
+agregarEntreFechasP = do reserved lis "agregarEntre"
                          day1 <- dayP
-                         reserved lis "-r"
                          day2 <- dayP
                          hour <- hourP
                          desc <- str
