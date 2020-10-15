@@ -1,0 +1,3 @@
+agregar 21/12/2020 12:30 almuerzo;
+agregarEntre 24/12/2020 25/12/2020 12:30 navidad;
+agregar 31/12/2020 23:59 fiesta de fin de año

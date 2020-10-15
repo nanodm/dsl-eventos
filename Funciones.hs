@@ -4,10 +4,7 @@ module Funciones
   verEvento2,
   cancelarEvento,
   cancelarEvento2,
-  modificarDescripcionEvento,
-  printDate,
-  printTime,
-  funcionTest
+  modificarDescripcionEvento
 ) where
 
 import Data.Dates
@@ -86,14 +83,4 @@ modificarDescripcionEvento date time newVal (x:xs) =
                                   else x:(modificarDescripcionEvento date time newVal xs)
        in nuevaLista
 
--- cancelar eventos entre 2 fechas
-
--- Funciones auxiliares para el evaluador
-printDate :: UTCTime -> String
-printDate date = formatTime defaultTimeLocale "%d/%m/%Y" date
-
-printTime :: UTCTime -> String
-printTime date = formatTime defaultTimeLocale "%H:%M" date
-
-funcionTest :: UTCTime -> UTCTime
-funcionTest date = addUTCTime (realToFrac 86400) date -- agrego 86400 segundos, o sea un día
+-- TODO: cancelar eventos entre 2 fechas
