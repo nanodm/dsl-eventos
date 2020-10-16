@@ -7,7 +7,7 @@ import System.IO
 -- Hay que ir descomentando los if uno por uno para probar las funciones correspondientes
 
 ---- main que modifica un evento y lo refleja en un archivo
---main = do
+-- main = do
 --     handle <- openFile "archivo.csv" ReadMode
 --     (tempName, tempHandle) <- openTempFile "." "temp"
 --     content <- hGetContents handle
@@ -37,7 +37,7 @@ import System.IO
 --     renameFile tempName "archivo.csv"
 
 --- main que funciona para verEventos
---main = do
+-- main = do
 --     content <- readFile "archivo.csv"
 --     let linedContent   = lines content
 --         eventos        = tail linedContent

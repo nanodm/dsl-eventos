@@ -26,7 +26,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "agregarEntre", "skip", "crear", "abrir"]
+                                  , reservedNames = ["agregar", "agregarEntre", "ver", "skip", "crear", "abrir"]
                                   , reservedOpNames = ["/","-",":"]
                                   })
 
@@ -43,8 +43,9 @@ sequenceOfComm =
      return $ (listToSeq list)
 
 comm' :: Parser Comm
-comm' =    agregarP
-       <|> agregarEntreFechasP
+comm' =    insertP
+       <|> insertBetweenP
+       <|> selectP
        <|> skipComm
 
 listToSeq [] = Skip
@@ -54,20 +55,24 @@ listToSeq (x:xs) = Seq x (listToSeq xs)
 skipComm :: Parser Comm
 skipComm = reserved lis "skip" >> return Skip
 
-agregarP :: Parser Comm
-agregarP = do  reserved lis "agregar"
-               date <- dateP
-               desc <- str
-               return (Add date desc)
+insertP :: Parser Comm
+insertP = do  reserved lis "agregar"
+              date <- dateP
+              desc <- str
+              return (Insert date desc)
 
--- agregar 09/09/2020 -r 11/09/2020 12:50:00 "clases";
-agregarEntreFechasP :: Parser Comm
-agregarEntreFechasP = do reserved lis "agregarEntre"
-                         day1 <- dayP
-                         day2 <- dayP
-                         hour <- hourP
-                         desc <- str
-                         return (AddBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
+insertBetweenP :: Parser Comm
+insertBetweenP = do reserved lis "agregarEntre"
+                    day1 <- dayP
+                    day2 <- dayP
+                    hour <- hourP
+                    desc <- str
+                    return (InsertBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
+
+selectP :: Parser Comm
+selectP = do reserved lis "ver"
+             date <- dateP
+             return (Select date)
 
 dateP :: Parser UTCTime
 dateP = do

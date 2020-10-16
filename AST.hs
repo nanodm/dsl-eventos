@@ -7,8 +7,9 @@ type Descripcion = String
 type NombreArchivo = String
 
 -- Comandos para agregar a un archivo
-data Comm = Add UTCTime Descripcion -- agrega un evento en una fecha
-            | AddBetween UTCTime UTCTime Descripcion -- agrega el mismo evento entre 2 fechas
+data Comm = Insert UTCTime Descripcion -- agrega un evento en una fecha
+            | InsertBetween UTCTime UTCTime Descripcion -- agrega el mismo evento entre 2 fechas
             | Seq Comm Comm
+            | Select UTCTime
             | Skip
  deriving Show
