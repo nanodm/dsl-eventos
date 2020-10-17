@@ -22,7 +22,7 @@ import System.IO
 --     renameFile tempName "archivo.csv"
 
 ---- main que cancela un evento y lo refleja en un archivo
---main = do
+-- main = do
 --     handle <- openFile "archivo.csv" ReadMode
 --     (tempName, tempHandle) <- openTempFile "." "temp"
 --     content <- hGetContents handle
@@ -43,3 +43,21 @@ import System.IO
 --         eventos        = tail linedContent
 --         eventoSelected = (verEvento "09-09-2020" eventos)
 --     putStrLn (unlines eventoSelected)
+
+-- Nuevo metodo agregar
+-- main = do
+--      handle <- openFile "archivo.csv" ReadMode
+--      (tempName, tempHandle) <- openTempFile "." "temp"
+--      content <- hGetContents handle
+--      let linedContent = lines content
+--          header       = head linedContent
+--          eventos      = tail linedContent
+--          isEvento     = (searchEvent "24/12/2020" "23:59" eventos)
+--      if (isEvento == True)
+--      then do putStrLn "El evento ya existe en esa fecha y hora"
+--      else do
+--           hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ "24/12/2020,23:59,fiesta")
+--           hClose handle
+--           hClose tempHandle
+--           removeFile "archivo.csv"
+--           renameFile tempName "archivo.csv"

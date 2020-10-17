@@ -33,12 +33,11 @@ lis = makeTokenParser (emptyDef   { commentStart  = "/*"
 -- parseComm :: SourceName -> String -> Either ParseError Comm
 -- parseComm = parse (totParser comm)
 
-parseComm = parse (totParser newFileP)
+parseComm = parse (totParser fileP)
 
--- usar cuando tenga definidos ambos parsers
 fileP :: Parser FileComm
-fileP =    newFileP
---       <|> openFileP
+fileP =   newFileP
+      <|> openFileP
 
 comm = parens lis comm
      <|> sequenceOfComm

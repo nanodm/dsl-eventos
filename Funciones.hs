@@ -4,7 +4,8 @@ module Funciones
   verEvento2,
   cancelarEvento,
   cancelarEvento2,
-  modificarDescripcionEvento
+  modificarDescripcionEvento,
+  searchEvent
 ) where
 
 import AST
@@ -84,5 +85,16 @@ modificarDescripcionEvento date time newVal (x:xs) =
                                   then (date ++ "," ++ hora ++ "," ++ newVal):xs
                                   else x:(modificarDescripcionEvento date time newVal xs)
        in nuevaLista
+
+searchEvent :: String -> String -> [String] -> Bool
+searchEvent _ _ [] = False
+searchEvent date time (x:xs) =
+           let fechaHoraDescripcion = getFechaHoraDescripcion x
+               fecha                = fechaHoraDescripcion !! 0
+               hora                 = fechaHoraDescripcion !! 1
+               isEvento             = if (fecha == date && hora == time)
+                                      then True
+                                      else (searchEvent date time xs)
+           in isEvento
 
 -- TODO: cancelar eventos entre 2 fechas
