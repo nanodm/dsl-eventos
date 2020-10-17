@@ -13,3 +13,7 @@ data Comm = Insert UTCTime Descripcion -- agrega un evento en una fecha
             | Select UTCTime
             | Skip
  deriving Show
+
+data FileComm = New NombreArchivo Comm
+                | Open NombreArchivo Comm
+ deriving Show

@@ -27,11 +27,18 @@ lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
                                   , reservedNames = ["agregar", "agregarEntre", "ver", "skip", "crear", "abrir"]
-                                  , reservedOpNames = ["/","-",":"]
+                                  , reservedOpNames = ["/","-",":",";"]
                                   })
 
-parseComm :: SourceName -> String -> Either ParseError Comm
-parseComm = parse (totParser comm)
+-- parseComm :: SourceName -> String -> Either ParseError Comm
+-- parseComm = parse (totParser comm)
+
+parseComm = parse (totParser newFileP)
+
+-- usar cuando tenga definidos ambos parsers
+fileP :: Parser FileComm
+fileP =    newFileP
+--       <|> openFileP
 
 comm = parens lis comm
      <|> sequenceOfComm
@@ -51,6 +58,20 @@ comm' =    insertP
 listToSeq [] = Skip
 listToSeq [x] = x
 listToSeq (x:xs) = Seq x (listToSeq xs)
+
+newFileP :: Parser FileComm
+newFileP = do reserved lis "crear"
+              filename <- str
+              reservedOp lis ";"
+              seq <- comm
+              return (New (filename ++ ".csv") seq)
+
+openFileP :: Parser FileComm
+openFileP = do reserved lis "abrir"
+               filename <- str
+               reservedOp lis ";"
+               seq <- comm
+               return (Open (filename ++ ".csv") seq)
 
 skipComm :: Parser Comm
 skipComm = reserved lis "skip" >> return Skip

@@ -7,6 +7,7 @@ module Funciones
   modificarDescripcionEvento
 ) where
 
+import AST
 import Data.Dates
 import Data.Time
 
@@ -25,8 +26,9 @@ getFechaHoraDescripcion :: String -> [String]
 getFechaHoraDescripcion evento = sepByComma evento
 
 ------ INSERT
-agregar :: String -> String -> String -> IO ()
-agregar fecha hora descripcion = appendFile "archivo.csv" (fecha ++ "," ++ hora ++ "," ++ descripcion ++ "\n")
+agregar :: String -> String -> String -> NombreArchivo -> IO ()
+agregar fecha hora descripcion filename =
+       appendFile filename (fecha ++ "," ++ hora ++ "," ++ descripcion ++ "\n")
 
 ------ SELECT
 -- ver "dia-mes-año"
