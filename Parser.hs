@@ -7,7 +7,6 @@ import Text.Parsec.Token
 import Text.Parsec.Char
 import Text.Parsec.Language (emptyDef)
 import Data.Char (isSpace)
-import Data.Dates
 import Data.Time
 import Data.Time.Clock
 import qualified Text.ParserCombinators.Parsec.Token as Token

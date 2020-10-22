@@ -1,6 +1,5 @@
 module AST where
 
-import Data.Dates
 import Data.Time
 
 type Descripcion = String

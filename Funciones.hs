@@ -9,7 +9,6 @@ module Funciones
 ) where
 
 import AST
-import Data.Dates
 import Data.Time
 
 --- función auxiliar que agarra una linea separada por comas y devuelve una lista con las palabras de la misma
