@@ -7,8 +7,6 @@ import System.Directory
 import Data.Char
 import Data.Time
 
--- eval :: Comm -> IO ()
--- eval p = evalComm p
 eval :: FileComm -> IO ()
 eval p = evalFileComm p
 

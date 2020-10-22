@@ -95,5 +95,3 @@ searchEvent date time (x:xs) =
                                       then True
                                       else (searchEvent date time xs)
            in isEvento
-
--- TODO: cancelar eventos entre 2 fechas

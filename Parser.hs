@@ -29,9 +29,7 @@ lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
--- parseComm :: SourceName -> String -> Either ParseError Comm
--- parseComm = parse (totParser comm)
-
+parseComm :: SourceName -> String -> Either ParseError FileComm
 parseComm = parse (totParser fileP)
 
 fileP :: Parser FileComm
@@ -43,8 +41,6 @@ comm = parens lis comm
 
 sequenceOfComm =
   do list <- (sepBy1 comm' (semi lis))
-     -- If there's only one statement return it without using Seq.
---     return $ if (length list) == 1 then head list else Seq list
      return $ (listToSeq list)
 
 comm' :: Parser Comm
