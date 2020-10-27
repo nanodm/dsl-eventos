@@ -32,6 +32,9 @@ evalComm (Insert date desc) filename = do
                                   isEvento     = (searchEvent date2 time eventos)
                               if (isEvento == True)
                               then do putStrLn $ "Ya existe un evento el " ++ date2 ++ " a las " ++ time
+                                      hClose handle
+                                      hClose tempHandle
+                                      removeFile tempName
                               else do
                                    hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ (formatEvent date2 time desc))
                                    hClose handle
@@ -59,7 +62,10 @@ evalComm (UpdateDescription date desc) filename = do
                                   eventos      = tail linedContent
                                   result       = (modificarDescripcionEvento (printDate date) (printTime date) desc eventos)
                               if (null eventos)
-                              then do putStrLn $ "No hay eventos"
+                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                                      hClose handle
+                                      hClose tempHandle
+                                      removeFile tempName
                               else do
                                    hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
                                    hClose handle
@@ -76,7 +82,10 @@ evalComm (UpdateFullDate date newDate) filename = do
                                   eventos      = tail linedContent
                                   result       = (modificarFechaEvento (printDate date) (printTime date) (printDate newDate) (printTime newDate) eventos)
                               if (null eventos)
-                              then do putStrLn $ "No hay eventos"
+                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                                      hClose handle
+                                      hClose tempHandle
+                                      removeFile tempName
                               else do
                                    hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
                                    hClose handle
@@ -93,7 +102,10 @@ evalComm (UpdateDate date newDate) filename = do
                                   eventos      = tail linedContent
                                   result       = (modificarFechaEvento2 (printDate date) (printDate newDate) eventos)
                               if (null eventos)
-                              then do putStrLn $ "No hay eventos"
+                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                                      hClose handle
+                                      hClose tempHandle
+                                      removeFile tempName
                               else do
                                    hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
                                    hClose handle
@@ -110,7 +122,10 @@ evalComm (UpdateTime date newDate) filename = do
                                   eventos      = tail linedContent
                                   result       = (modificarFechaEvento3 (printDate date) (printTime date) (printTime newDate) eventos)
                               if (null eventos)
-                              then do putStrLn $ "No hay eventos"
+                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                                      hClose handle
+                                      hClose tempHandle
+                                      removeFile tempName
                               else do
                                    hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
                                    hClose handle
