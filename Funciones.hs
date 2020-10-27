@@ -5,6 +5,9 @@ module Funciones
   cancelarEvento,
   cancelarEvento2,
   modificarDescripcionEvento,
+  modificarFechaEvento,
+  modificarFechaEvento2,
+  modificarFechaEvento3,
   searchEvent
 ) where
 
@@ -83,6 +86,45 @@ modificarDescripcionEvento date time newVal (x:xs) =
            nuevaLista           = if (fecha == date && hora == time)
                                   then (date ++ "," ++ hora ++ "," ++ newVal):xs
                                   else x:(modificarDescripcionEvento date time newVal xs)
+       in nuevaLista
+
+-- modificar "dia-mes-año" "hora:min" "dia-mes-año" "hora:min"
+modificarFechaEvento :: String -> String -> String -> String -> [String] -> [String]
+modificarFechaEvento _ _ _ _ [] = []
+modificarFechaEvento date time newDate newTime (x:xs) =
+       let fechaHoraDescripcion = getFechaHoraDescripcion x
+           fecha                = fechaHoraDescripcion !! 0
+           hora                 = fechaHoraDescripcion !! 1
+           desc                 = fechaHoraDescripcion !! 2
+           nuevaLista           = if (fecha == date && hora == time)
+                                  then (newDate ++ "," ++ newTime ++ "," ++ desc):xs
+                                  else x:(modificarFechaEvento date time newDate newTime xs)
+       in nuevaLista
+
+-- modificar "dia-mes-año" "dia-mes-año"
+modificarFechaEvento2 :: String -> String -> [String] -> [String]
+modificarFechaEvento2 _ _ [] = []
+modificarFechaEvento2 date newDate (x:xs) =
+       let fechaHoraDescripcion = getFechaHoraDescripcion x
+           fecha                = fechaHoraDescripcion !! 0
+           hora                 = fechaHoraDescripcion !! 1
+           desc                 = fechaHoraDescripcion !! 2
+           nuevaLista           = if (fecha == date)
+                                  then (newDate ++ "," ++ hora ++ "," ++ desc):xs
+                                  else x:(modificarFechaEvento2 date newDate xs)
+       in nuevaLista
+
+-- modificar "dia-mes-año" "hora:min" "hora:min"
+modificarFechaEvento3 :: String -> String -> String -> [String] -> [String]
+modificarFechaEvento3 _ _ _ [] = []
+modificarFechaEvento3 date time newTime (x:xs) =
+       let fechaHoraDescripcion = getFechaHoraDescripcion x
+           fecha                = fechaHoraDescripcion !! 0
+           hora                 = fechaHoraDescripcion !! 1
+           desc                 = fechaHoraDescripcion !! 2
+           nuevaLista           = if (fecha == date && hora == time)
+                                  then (date ++ "," ++ newTime ++ "," ++ desc):xs
+                                  else x:(modificarFechaEvento3 date time newTime xs)
        in nuevaLista
 
 searchEvent :: String -> String -> [String] -> Bool

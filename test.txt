@@ -1,7 +1,14 @@
 crear agenda;
 
+modificar 31/12/2020 23:59 -desc fiesta de anio nuevo;
 agregar 21/12/2020 12:30 almuerzo;
 agregar 24/12/2020 -r 26/12/2020 12:30 navidad;
 agregar 31/12/2020 23:59 fiesta de fin de año;
+
+modificar 31/12/2020 23:59 -fd 01/01/2021 00:00;
+modificar 01/01/2021 00:00 -d 02/01/2021;
+modificar 02/01/2021 00:00 -desc fiesta de año nuevo;
+modificar 02/01/2021 00:00 -t 23:58;
+
 ver 21/12/2020 12:30;
 skip

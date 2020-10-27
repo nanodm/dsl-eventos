@@ -16,7 +16,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir"]
+                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t"]
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
@@ -69,7 +69,18 @@ comm' :: Parser Comm
 comm' = try insertP
        <|>  insertBetweenP
        <|>  selectP
+       <|>  updateP
        <|>  skipComm
+
+
+updateP = try updateDescription
+          <|>  updateP2
+
+updateP2 = try updateFullDate
+           <|>  updateP3
+
+updateP3 = try updateDate
+           <|> updateTime
 
 listToSeq [] = Skip
 listToSeq [x] = x
@@ -98,6 +109,34 @@ selectP = do reserved lis "ver"
              date <- dateP
              return (Select date)
 
+updateDescription :: Parser Comm
+updateDescription = do reserved lis "modificar"
+                       date <- dateP
+                       reserved lis "-desc"
+                       desc <- str
+                       return (UpdateDescription date desc)
+
+updateFullDate :: Parser Comm
+updateFullDate = do reserved lis "modificar"
+                    date <- dateP
+                    reserved lis "-fd"
+                    newDate <- dateP
+                    return (UpdateFullDate date newDate) 
+
+updateDate :: Parser Comm
+updateDate = do reserved lis "modificar"
+                date <- dateP
+                reserved lis "-d"
+                newDay <- dayP
+                return (UpdateDate date (UTCTime newDay (60*60*60 + 60*60*60))) 
+
+updateTime :: Parser Comm
+updateTime = do reserved lis "modificar"
+                date <- dateP
+                reserved lis "-t"
+                newTime <- hourP
+                return (UpdateTime date (UTCTime (fromGregorian (fromInteger 2020) (fromInteger 01) (fromInteger 01)) newTime)) 
+
 dateP :: Parser UTCTime
 dateP = do
             day  <- dayP
@@ -123,4 +162,3 @@ hourP = do
 removeSpaces :: String -> String
 removeSpaces [] = []
 removeSpaces (x:xs) = if isSpace x then removeSpaces xs else (x:xs)
-
