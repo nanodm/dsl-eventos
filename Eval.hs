@@ -46,11 +46,18 @@ evalComm (InsertBetween date1 date2 desc) filename = if date1 >= date2
                                             then putStrLn "La primer fecha debe ser menor a la segunda."
                                             else agregarAux date1 date2 desc filename
 
-evalComm (Select date) filename = do
+evalComm (SelectDate date) filename = do
                                 content <- readFile filename
                                 let linedContent   = lines content
                                     eventos        = tail linedContent
                                     eventoSelected = (verEvento (printDate date) eventos)
+                                putStr (unlines eventoSelected)
+
+evalComm (SelectFullDate date) filename = do
+                                content <- readFile filename
+                                let linedContent   = lines content
+                                    eventos        = tail linedContent
+                                    eventoSelected = (verEvento2 (printDate date) (printTime date) eventos)
                                 putStr (unlines eventoSelected)
 
 evalComm (UpdateDescription date desc) filename = do

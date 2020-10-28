@@ -1,18 +1,25 @@
 crear agenda;
 
-modificar 31/12/2020 23:59 -desc fiesta de anio nuevo;
-cancelar -fd 21/12/2020 12:30;
-agregar 21/12/2020 12:30 almuerzo;
-agregar 24/12/2020 -r 26/12/2020 12:30 navidad;
-agregar 25/12/2020 -r 26/12/2020 12:30 post navidad;
-agregar 31/12/2020 23:59 fiesta de fin de año;
+// agregar todos/12/2020 "Comer"
 
-cancelar -fd 21/12/2020 12:30;
-cancelar -d 25/12/2020;
-modificar 31/12/2020 23:59 -fd 01/01/2021 00:00;
-modificar 01/01/2021 00:00 -d 02/01/2021;
-modificar 02/01/2021 00:00 -desc fiesta de año nuevo;
-modificar 02/01/2021 00:00 -t 23:58;
-
-ver 21/12/2020 12:30;
+agregar 21/12/2020 23:45 comer;
+ver 21/12/2020 23:45;
+modificar 21/12/2020 23:45 -desc test;
+ver 21/12/2020 23:45;
+modificar 21/12/2020 23:45 -fd 25/12/2020 11:30;
+ver 25/12/2020 11:30;
+modificar 25/12/2020 11:30 -d 26/12/2020;
+ver 26/12/2020 11:30;
+modificar 26/12/2020 11:30 -t 21:30;
+ver 26/12/2020 21:30;
+cancelar -d 26/12/2020;
+ver 26/12/2020 21:30;
+agregar 21/05/2020 12:31 test;
+agregar 21/05/2020 12:32 test;
+agregar 21/05/2020 12:33 test;
+agregar 21/05/2020 12:34 test;
+agregar 21/05/2020 12:35 test;
+ver 21/05/2020;
+agregar 24/05/2020 12:35 test;
+ver 24/05/2020 12:35;
 skip

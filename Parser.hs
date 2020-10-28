@@ -73,15 +73,13 @@ comm' = try insertP
        <|>  cancelP
        <|>  skipComm
 
+selectP = try selectFullDateP
+          <|> selectDayP
 
 updateP = try updateDescription
-          <|>  updateP2
-
-updateP2 = try updateFullDate
-           <|>  updateP3
-
-updateP3 = try updateDate
-           <|> updateTime
+          <|>  try updateFullDate
+               <|> try updateDate
+                   <|> updateTime
 
 cancelP = try cancelDate
           <|> cancelDay
@@ -108,10 +106,15 @@ insertBetweenP = do reserved lis "agregar"
                     desc <- str
                     return (InsertBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
 
-selectP :: Parser Comm
-selectP = do reserved lis "ver"
-             date <- dateP
-             return (Select date)
+selectDayP :: Parser Comm
+selectDayP = do reserved lis "ver"
+                day <- dayP
+                return (SelectDate (UTCTime day (60*60*60 + 60*60*60)))
+
+selectFullDateP :: Parser Comm
+selectFullDateP = do reserved lis "ver"
+                     date <- dateP
+                     return (SelectFullDate date)
 
 updateDescription :: Parser Comm
 updateDescription = do reserved lis "modificar"

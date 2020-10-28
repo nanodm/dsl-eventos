@@ -14,7 +14,8 @@ data Comm = Insert UTCTime Descripcion -- agrega un evento en una fecha
             | CancelEventDate UTCTime
             | CancelEventDay UTCTime
             | Seq Comm Comm
-            | Select UTCTime
+            | SelectDate UTCTime
+            | SelectFullDate UTCTime
             | Skip
  deriving Show
 
