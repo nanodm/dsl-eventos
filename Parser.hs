@@ -16,7 +16,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t"]
+                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar"]
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
@@ -70,6 +70,7 @@ comm' = try insertP
        <|>  insertBetweenP
        <|>  selectP
        <|>  updateP
+       <|>  cancelP
        <|>  skipComm
 
 
@@ -81,6 +82,9 @@ updateP2 = try updateFullDate
 
 updateP3 = try updateDate
            <|> updateTime
+
+cancelP = try cancelDate
+          <|> cancelDay
 
 listToSeq [] = Skip
 listToSeq [x] = x
@@ -136,6 +140,18 @@ updateTime = do reserved lis "modificar"
                 reserved lis "-t"
                 newTime <- hourP
                 return (UpdateTime date (UTCTime (fromGregorian (fromInteger 2020) (fromInteger 01) (fromInteger 01)) newTime)) 
+
+cancelDate :: Parser Comm
+cancelDate = do reserved lis "cancelar"
+                reserved lis "-fd"
+                date <- dateP
+                return (CancelEventDate date)
+
+cancelDay :: Parser Comm
+cancelDay = do reserved lis "cancelar"
+               reserved lis "-d"
+               day <- dayP
+               return (CancelEventDay (UTCTime day (60*60*60 + 60*60*60)))
 
 dateP :: Parser UTCTime
 dateP = do
