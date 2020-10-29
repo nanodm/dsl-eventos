@@ -1,25 +1,5 @@
-crear agenda;
+abrir agenda;
 
-// agregar todos/12/2020 "Comer"
-
-agregar 21/12/2020 23:45 comer;
-ver 21/12/2020 23:45;
-modificar 21/12/2020 23:45 -desc test;
-ver 21/12/2020 23:45;
-modificar 21/12/2020 23:45 -fd 25/12/2020 11:30;
-ver 25/12/2020 11:30;
-modificar 25/12/2020 11:30 -d 26/12/2020;
-ver 26/12/2020 11:30;
-modificar 26/12/2020 11:30 -t 21:30;
-ver 26/12/2020 21:30;
-cancelar -d 26/12/2020;
-ver 26/12/2020 21:30;
-agregar 21/05/2020 12:31 test;
-agregar 21/05/2020 12:32 test;
-agregar 21/05/2020 12:33 test;
-agregar 21/05/2020 12:34 test;
-agregar 21/05/2020 12:35 test;
-ver 21/05/2020;
-agregar 24/05/2020 12:35 test;
-ver 24/05/2020 12:35;
-skip
+// agregar 21/12/2020 12:30 comer;
+// agregar 21/12/2020 -r 24/12/2020 12:50 cenar
+agregar todos/01/2020 12:30 test

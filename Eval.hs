@@ -42,9 +42,12 @@ evalComm (Insert date desc) filename = do
                                    removeFile filename
                                    renameFile tempName filename
 
-evalComm (InsertBetween date1 date2 desc) filename = if date1 >= date2
+evalComm (InsertBetween date1 date2 desc) filename = if date1 > date2
                                             then putStrLn "La primer fecha debe ser menor a la segunda."
                                             else agregarAux date1 date2 desc filename
+evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
+                                                     then agregarAux2 date1 date2 desc filename
+                                                     else return ()
 
 evalComm (SelectDate date) filename = do
                                 content <- readFile filename
@@ -182,11 +185,20 @@ evalComm (CancelEventDay date) filename = do
 
 
 -- Funciones auxiliares (no se si irían en este archivo)
+-- auxiliar para InsertBetween (<=)
 agregarAux :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
 agregarAux date1 date2 desc filename = if date1 <= date2
                                        then
                                          do evalComm (Insert date1 desc) filename
                                             agregarAux (addOneDay date1) date2 desc filename
+                                       else return ()
+
+-- auxiliar para InsertAllDays (<)
+agregarAux2 :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
+agregarAux2 date1 date2 desc filename = if date1 < date2
+                                       then
+                                         do evalComm (Insert date1 desc) filename
+                                            agregarAux2 (addOneDay date1) date2 desc filename
                                        else return ()
 
 printDate :: UTCTime -> String

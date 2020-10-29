@@ -7,6 +7,7 @@ type NombreArchivo = String
 
 data Comm = Insert UTCTime Descripcion -- agrega un evento en una fecha
             | InsertBetween UTCTime UTCTime Descripcion -- agrega el mismo evento entre 2 fechas
+            | InsertAllDays UTCTime UTCTime Descripcion -- agrega el mismo evento todos los días de un mes
             | UpdateDescription UTCTime Descripcion
             | UpdateFullDate UTCTime UTCTime
             | UpdateDate UTCTime UTCTime

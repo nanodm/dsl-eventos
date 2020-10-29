@@ -16,7 +16,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar"]
+                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar", "todos"]
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
@@ -67,11 +67,15 @@ sequenceOfComm =
 
 comm' :: Parser Comm
 comm' = try insertP
-       <|>  insertBetweenP
+     --   <|>  insertBetweenP
        <|>  selectP
        <|>  updateP
        <|>  cancelP
        <|>  skipComm
+
+insertP = try insertFullDateP
+          <|> try insertBetweenP
+              <|> insertAllDaysP
 
 selectP = try selectFullDateP
           <|> selectDayP
@@ -91,11 +95,11 @@ listToSeq (x:xs) = Seq x (listToSeq xs)
 skipComm :: Parser Comm
 skipComm = reserved lis "skip" >> return Skip
 
-insertP :: Parser Comm
-insertP = do  reserved lis "agregar"
-              date <- dateP
-              desc <- str
-              return (Insert date desc)
+insertFullDateP :: Parser Comm
+insertFullDateP = do  reserved lis "agregar"
+                      date <- dateP
+                      desc <- str
+                      return (Insert date desc)
 
 insertBetweenP :: Parser Comm
 insertBetweenP = do reserved lis "agregar"
@@ -106,6 +110,19 @@ insertBetweenP = do reserved lis "agregar"
                     desc <- str
                     return (InsertBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
 
+insertAllDaysP :: Parser Comm
+insertAllDaysP = do reserved lis "agregar"
+                    reserved lis "todos"
+                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))
+                    month <-  natural lis
+                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))          
+                    year <-  natural lis
+                    hour <- hourP
+                    desc <- str
+                    return (InsertAllDays (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))
+                                          hour)
+                                          (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)))
+                                          hour) desc)
 selectDayP :: Parser Comm
 selectDayP = do reserved lis "ver"
                 day <- dayP
@@ -181,3 +198,7 @@ hourP = do
 removeSpaces :: String -> String
 removeSpaces [] = []
 removeSpaces (x:xs) = if isSpace x then removeSpaces xs else (x:xs)
+
+
+----
+getDia date = case formatTime defaultTimeLocale "%A" date of "Monday" -> "Lunes"
