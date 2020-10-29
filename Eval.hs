@@ -53,6 +53,19 @@ evalComm (InsertBetween date1 date2 desc) filename = if date1 > date2
 evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
                                                      then agregarAux2 date1 date2 desc filename
                                                      else return ()
+evalComm (InsertFullDay date desc) filename = do
+                                    handle <- openFile filename ReadMode
+                                    (tempName, tempHandle) <- openTempFile "." "temp"
+                                    content <- hGetContents handle
+                                    let linedContent = lines content
+                                        header       = head linedContent
+                                        eventos      = tail linedContent
+                                        date2        = printDate date
+                                    do  hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ (formatEvent2 date2 desc))
+                                        hClose handle
+                                        hClose tempHandle
+                                        removeFile filename
+                                        renameFile tempName filename 
 
 evalComm (SelectDate date) filename = do
                                 content <- readFile filename
@@ -188,6 +201,7 @@ evalComm (CancelEventDay date) filename = do
                                    removeFile filename
                                    renameFile tempName filename
 
+evalComm (CancelFullDay date) filename = do evalComm (CancelEventDay date) filename
 
 -- Funciones auxiliares (no se si irían en este archivo)
 -- auxiliar para InsertBetween (<=)
@@ -227,6 +241,9 @@ addOneWeek date = addUTCTime (realToFrac 604800) date -- agrego 604800, o sea un
 
 formatEvent :: String -> String -> String -> String
 formatEvent date time desc = date ++ "," ++ time ++ "," ++ desc ++ "\n"
+
+formatEvent2 :: String -> String -> String
+formatEvent2 date desc = date ++ "," ++ "(todo el día)" ++ "," ++ desc ++ "\n"
 
 getWeekDay :: String -> String
 getWeekDay weekday = case weekday of "lunes"     -> "Monday"

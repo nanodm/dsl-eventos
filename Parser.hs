@@ -16,7 +16,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar", "todos"]
+                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
@@ -76,7 +76,8 @@ comm' = try insertP
 insertP = try insertFullDateP
           <|> try insertBetweenP
               <|> try insertAllDaysP
-                  <|> insertWeeklyP
+                  <|> try insertWeeklyP
+                      <|> insertFullDay
 
 selectP = try selectFullDateP
           <|> selectDayP
@@ -87,7 +88,8 @@ updateP = try updateDescription
                   <|> updateTime
 
 cancelP = try cancelDate
-          <|> cancelDay
+          <|> try cancelDay
+              <|> cancelFullDay
 
 listToSeq [] = Skip
 listToSeq [x] = x
@@ -138,6 +140,13 @@ insertWeeklyP = do reserved lis "agregar"
                                        (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))) hour)
                                        desc weekday)
 
+insertFullDay :: Parser Comm
+insertFullDay = do reserved lis "agregar"
+                   day1 <- dayP
+                   reserved lis "-f"
+                   desc <- str
+                   return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc)
+
 selectDayP :: Parser Comm
 selectDayP = do reserved lis "ver"
                 day <- dayP
@@ -187,6 +196,12 @@ cancelDay = do reserved lis "cancelar"
                reserved lis "-d"
                day <- dayP
                return (CancelEventDay (UTCTime day (60*60*60 + 60*60*60)))
+
+cancelFullDay :: Parser Comm
+cancelFullDay = do reserved lis "cancelar"
+                   reserved lis "-f"
+                   day <- dayP
+                   return (CancelEventDay (UTCTime day (60*60*60 + 60*60*60)))
 
 dateP :: Parser UTCTime
 dateP = do
