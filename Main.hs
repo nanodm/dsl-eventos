@@ -1,63 +1,20 @@
-import Funciones
-import System.Environment
-import System.Directory
-import System.IO
+module Main where
 
------- IMPORTANTE ------
--- Hay que ir descomentando los if uno por uno para probar las funciones correspondientes
+import System.Environment (getArgs)
+import Parser (parseComm)
 
----- main que modifica un evento y lo refleja en un archivo
--- main = do
---     handle <- openFile "archivo.csv" ReadMode
---     (tempName, tempHandle) <- openTempFile "." "temp"
---     content <- hGetContents handle
---     let linedContent = lines content
---         header       = head linedContent
---         eventos      = tail linedContent
---         newEventos   = (modificarDescripcionEvento "09-09-2020" "21:30" "TEST" eventos)
---     hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEventos))
---     hClose handle
---     hClose tempHandle
---     removeFile "archivo.csv"
---     renameFile tempName "archivo.csv"
+import Eval
+--------------------------------------
 
----- main que cancela un evento y lo refleja en un archivo
--- main = do
---     handle <- openFile "archivo.csv" ReadMode
---     (tempName, tempHandle) <- openTempFile "." "temp"
---     content <- hGetContents handle
---     let linedContent = lines content
---         header       = head linedContent
---         eventos      = tail linedContent
---         newEventos   = (cancelarEvento "16-09-2020" eventos)
---     hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEventos))
---     hClose handle
---     hClose tempHandle
---     removeFile "archivo.csv"
---     renameFile tempName "archivo.csv"
+main :: IO ()
+main = do arg:_ <- getArgs
+          run arg
 
---- main que funciona para verEventos
--- main = do
---     content <- readFile "archivo.csv"
---     let linedContent   = lines content
---         eventos        = tail linedContent
---         eventoSelected = (verEvento "09-09-2020" eventos)
---     putStrLn (unlines eventoSelected)
-
--- Nuevo metodo agregar
--- main = do
---      handle <- openFile "archivo.csv" ReadMode
---      (tempName, tempHandle) <- openTempFile "." "temp"
---      content <- hGetContents handle
---      let linedContent = lines content
---          header       = head linedContent
---          eventos      = tail linedContent
---          isEvento     = (searchEvent "24/12/2020" "23:59" eventos)
---      if (isEvento == True)
---      then do putStrLn "El evento ya existe en esa fecha y hora"
---      else do
---           hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ "24/12/2020,23:59,fiesta")
---           hClose handle
---           hClose tempHandle
---           removeFile "archivo.csv"
---           renameFile tempName "archivo.csv"
+run :: [Char] -> IO ()
+run ifile = 
+    do
+    s <- readFile ifile
+    case parseComm ifile s of
+      Left error -> print error
+      Right t    -> (eval t) -- manipular el archivo
+      -- Right t    -> print t  --imprimir sin evaluar (para testear Parser)

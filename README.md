@@ -1,4 +1,50 @@
-## dsl-eventos
+# dsl-eventos
+
+## Comandos disponibles
+
+### Agregar
+
+##### _Agregar evento en una fecha y hora_
+agregar [fecha] [hora] [descripción] <br/> **Por ejemplo:** agregar 01/01/2020 13:00 almuerzo de año nuevo; <br/>
+
+##### _Agregar evento entre dos fechas a cierta hora_
+agregar [fecha2] -r [fecha2] [hora] [descripción] <br/> **Por ejemplo:** agregar 05/01/2020 -r 10/01/2020 12:30 almuerzo de vacaciones; <br/>
+
+##### _Agregar evento todos los días de un mes a cierta hora_
+agregar todos/[mes]/[año] [hora] [descripción] <br/> **Por ejemplo:** agregar todos/02/2020 22:00 cena en febrero; <br/>
+
+##### _Agregar el mismo evento todos los días específicos de un mes_
+agregar [día_de_la_semana]/[mes]/[año] [hora] [descripción] <br/> **Por ejemplo:** agregar miercoles/10/2020 12:30 TODOS LOS MIERCOLES DE OCTUBRE; <br/>
+
+### Modificar
+
+##### _Modificar descripción_
+modificar [fecha] [hora] -desc [descripción] <br/> **Por ejemplo:** modificar 28/10/2020 12:30 -desc todos los miercoles de octubre; <br/>
+
+##### _Modificar fecha y hora_
+modificar [fecha] [hora] -fd [fecha] [hora] <br/> **Por ejemplo:** modificar 21/10/2020 12:30 -fd 22/10/2020 13:30; <br/>
+
+##### _Modificar fecha_
+modificar [fecha] [hora] -d [fecha] <br/> **Por ejemplo:** modificar 22/10/2020 13:30 -d 21/10/2020; <br/>
+
+##### _Modificar hora_
+modificar [fecha] [hora] -t [hora] <br/> **Por ejemplo:** modificar 21/10/2020 13:30 -t 12:30; <br/>
+
+### Cancelar
+
+#### _Cancelar evento en una fecha y hora_
+cancelar -fd [fecha] [hora] <br/> **Por ejemplo:** cancelar -fd 06/02/2020 22:00; <br/>
+
+#### _Cancelar eventos en una fecha_
+cancelar -d [fecha] <br/> **Por ejemplo:** cancelar -d 07/02/2020; <br/>
+
+### Ver
+
+#### _Ver eventos de una fecha_
+ver [fecha] <br/> **Por ejemplo:** ver 28/10/2020; <br/>
+
+#### _Ver un evento en una fecha y hora_
+ver [fecha] [hora] <br/> **Por ejemplo:** ver 22/10/2020 13:30; <br/>
 
 # Tipos de datos base de nuestro AST
 

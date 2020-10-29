@@ -1,5 +1,33 @@
-abrir agenda;
+crear agenda;
 
-// agregar 21/12/2020 12:30 comer;
-// agregar 21/12/2020 -r 24/12/2020 12:50 cenar
-agregar todos/01/2020 12:30 test
+agregar 01/01/2020 13:00 almuerzo de año nuevo;
+ver 01/01/2020 13:00;
+
+agregar 05/01/2020 -r 10/01/2020 12:30 almuerzo de vacaciones;
+ver 08/01/2020 12:30;
+
+agregar todos/02/2020 22:00 cena en febrero;
+ver 06/02/2020 22:00;
+
+agregar miercoles/10/2020 12:30 TODOS LOS MIERCOLES DE OCTUBRE;
+ver 21/10/2020 12:30;
+
+modificar 28/10/2020 12:30 -desc todos los miercoles de octubre;
+ver 28/10/2020;
+
+modificar 21/10/2020 12:30 -fd 22/10/2020 13:30;
+ver 22/10/2020 13:30;
+
+modificar 22/10/2020 13:30 -d 21/10/2020;
+ver 21/10/2020 13:30;
+
+modificar 21/10/2020 13:30 -t 12:30;
+ver 21/10/2020 12:30;
+
+cancelar -fd 06/02/2020 22:00;
+ver 06/02/2020 22:00;
+
+cancelar -d 07/02/2020;
+ver 07/02/2020;
+
+skip

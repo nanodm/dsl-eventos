@@ -75,15 +75,16 @@ comm' = try insertP
 
 insertP = try insertFullDateP
           <|> try insertBetweenP
-              <|> insertAllDaysP
+              <|> try insertAllDaysP
+                  <|> insertWeeklyP
 
 selectP = try selectFullDateP
           <|> selectDayP
 
 updateP = try updateDescription
-          <|>  try updateFullDate
-               <|> try updateDate
-                   <|> updateTime
+          <|> try updateFullDate
+              <|> try updateDate
+                  <|> updateTime
 
 cancelP = try cancelDate
           <|> cancelDay
@@ -123,6 +124,20 @@ insertAllDaysP = do reserved lis "agregar"
                                           hour)
                                           (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)))
                                           hour) desc)
+
+insertWeeklyP :: Parser Comm
+insertWeeklyP = do reserved lis "agregar"
+                   weekday <- str
+                   (try (reservedOp lis "/") <|> (reservedOp lis "-"))
+                   month <- natural lis
+                   (try (reservedOp lis "/") <|> (reservedOp lis "-"))
+                   year <- natural lis
+                   hour <- hourP
+                   desc <- str
+                   return (InsertWeekly (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)) hour)
+                                       (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))) hour)
+                                       desc weekday)
+
 selectDayP :: Parser Comm
 selectDayP = do reserved lis "ver"
                 day <- dayP

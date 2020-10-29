@@ -20,6 +20,11 @@ evalComm Skip filename = return ()
 evalComm (Seq com1 com2) filename = do evalComm com1 filename
                                        evalComm com2 filename
 
+evalComm (InsertWeekly date1 date2 desc dia) filename = do 
+                                                          let day = getWeekDay dia
+                                                              firstDay = getDateByWeekDay date1 day
+                                                          do agregarAux3 firstDay date2 desc filename --putStrLn $ show firstDay
+
 evalComm (Insert date desc) filename = do
                               handle <- openFile filename ReadMode
                               (tempName, tempHandle) <- openTempFile "." "temp"
@@ -201,6 +206,13 @@ agregarAux2 date1 date2 desc filename = if date1 < date2
                                             agregarAux2 (addOneDay date1) date2 desc filename
                                        else return ()
 
+-- auxiliar para InsertWeekly
+agregarAux3 :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
+agregarAux3 firstDay date2 desc filename = if firstDay < date2
+                                           then do evalComm (Insert firstDay desc) filename
+                                                   agregarAux3 (addOneWeek firstDay) date2 desc filename
+                                           else return ()
+
 printDate :: UTCTime -> String
 printDate date = formatTime defaultTimeLocale "%d/%m/%Y" date
 
@@ -210,5 +222,24 @@ printTime date = formatTime defaultTimeLocale "%H:%M" date
 addOneDay :: UTCTime -> UTCTime
 addOneDay date = addUTCTime (realToFrac 86400) date -- agrego 86400 segundos, o sea un día
 
+addOneWeek :: UTCTime -> UTCTime
+addOneWeek date = addUTCTime (realToFrac 604800) date -- agrego 604800, o sea una semana
+
 formatEvent :: String -> String -> String -> String
 formatEvent date time desc = date ++ "," ++ time ++ "," ++ desc ++ "\n"
+
+getWeekDay :: String -> String
+getWeekDay weekday = case weekday of "lunes"     -> "Monday"
+                                     "martes"    -> "Tuesday"
+                                     "miercoles" -> "Wednesday"
+                                     "jueves"    -> "Thursday"
+                                     "viernes"   -> "Friday"
+                                     "sabado"    -> "Saturday"
+                                     "domingo"   -> "Sunday"
+
+-- devuelve la fecha del primer "weekday" del mes
+-- por ejemplo: getDateByWeekDay 2020-10-01 "Wednesday" --> 2020/10/07
+getDateByWeekDay :: UTCTime -> String -> UTCTime
+getDateByWeekDay date weekday = if ((formatTime defaultTimeLocale "%A" date) == weekday)
+                                then date
+                                else getDateByWeekDay (addOneDay date) weekday
