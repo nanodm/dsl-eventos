@@ -29,14 +29,20 @@ evalComm (Insert date desc) filename = do
                               handle <- openFile filename ReadMode
                               (tempName, tempHandle) <- openTempFile "." "temp"
                               content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  date2        = printDate date
-                                  time         = printTime date
-                                  isEvento     = (searchEvent date2 time eventos)
-                              if (isEvento == True)
+                              let linedContent     = lines content
+                                  header           = head linedContent
+                                  eventos          = tail linedContent
+                                  date2            = printDate date
+                                  time             = printTime date
+                                  hasEvento        = (searchEvent date2 time eventos)
+                                  hasFullDayEvento = (searchFullDayEvent date2 eventos)
+                              if (hasEvento == True)
                               then do putStrLn $ "Ya existe un evento el " ++ date2 ++ " a las " ++ time
+                                      hClose handle
+                                      hClose tempHandle
+                                      removeFile tempName
+                              else if (hasFullDayEvento == True)
+                              then do putStrLn $ "Ya existe un evento el " ++ date2 ++ " que dura todo el día"
                                       hClose handle
                                       hClose tempHandle
                                       removeFile tempName
@@ -50,9 +56,11 @@ evalComm (Insert date desc) filename = do
 evalComm (InsertBetween date1 date2 desc) filename = if date1 > date2
                                             then putStrLn "La primer fecha debe ser menor a la segunda."
                                             else agregarAux date1 date2 desc filename
+
 evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
                                                      then agregarAux2 date1 date2 desc filename
                                                      else return ()
+
 evalComm (InsertFullDay date desc) filename = do
                                     handle <- openFile filename ReadMode
                                     (tempName, tempHandle) <- openTempFile "." "temp"
@@ -61,11 +69,17 @@ evalComm (InsertFullDay date desc) filename = do
                                         header       = head linedContent
                                         eventos      = tail linedContent
                                         date2        = printDate date
-                                    do  hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ (formatEvent2 date2 desc))
-                                        hClose handle
-                                        hClose tempHandle
-                                        removeFile filename
-                                        renameFile tempName filename 
+                                        hasEvento    = (searchEventByDay date2 eventos)
+                                    if (hasEvento == True)
+                                    then do putStrLn $ "Ya existe un evento el " ++ date2
+                                            hClose handle
+                                            hClose tempHandle
+                                            removeFile tempName
+                                    else do hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ (formatEvent2 date2 desc))
+                                            hClose handle
+                                            hClose tempHandle
+                                            removeFile filename
+                                            renameFile tempName filename 
 
 evalComm (SelectDate date) filename = do
                                 content <- readFile filename
