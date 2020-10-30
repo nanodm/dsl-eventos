@@ -54,6 +54,9 @@ evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
                                                      then agregarAux2 date1 date2 desc filename
                                                      else return ()
 
+evalComm (InsertMonthly date1 desc) filename = do
+                                                agre
+
 evalComm (SelectDate date) filename = do
                                 content <- readFile filename
                                 let linedContent   = lines content
@@ -243,3 +246,6 @@ getDateByWeekDay :: UTCTime -> String -> UTCTime
 getDateByWeekDay date weekday = if ((formatTime defaultTimeLocale "%A" date) == weekday)
                                 then date
                                 else getDateByWeekDay (addOneDay date) weekday
+
+getMonth :: UTCTime -> Integer
+getMonth = read (formatTime defaultTimeLocale "%m" getCurrentTime) :: Integer

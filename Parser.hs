@@ -16,7 +16,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar", "todos"]
+                                  , reservedNames = ["agregar", "-r", "-m", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar", "todos"]
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
@@ -137,6 +137,22 @@ insertWeeklyP = do reserved lis "agregar"
                    return (InsertWeekly (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)) hour)
                                        (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))) hour)
                                        desc weekday)
+
+insertMonthlyP :: Parser Comm
+insertMonthlyP = do reserved lis "agregar"
+                    day <- natural lis
+                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))
+                    reserved lis "todos"
+                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))          
+                    year <-  natural lis
+                    hour <- hourP
+                    desc <- str
+                    now <- getCurrentTime
+                    m <- formatTime defaultTimeLocale "%m" now
+                    return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger (read m :: Integer)) (fromInteger day)) hour)
+                                       (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromEnum (formatTime defaultTimeLocale "%m" getCurrentTime)) (fromInteger day))) hour)
+                                       desc)
+
 
 selectDayP :: Parser Comm
 selectDayP = do reserved lis "ver"
