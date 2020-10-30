@@ -67,7 +67,6 @@ sequenceOfComm =
 
 comm' :: Parser Comm
 comm' = try insertP
-     --   <|>  insertBetweenP
        <|>  selectP
        <|>  updateP
        <|>  cancelP
@@ -88,8 +87,7 @@ updateP = try updateDescription
                   <|> updateTime
 
 cancelP = try cancelDate
-          <|> try cancelDay
-              <|> cancelFullDay
+          <|> cancelDay
 
 listToSeq [] = Skip
 listToSeq [x] = x
@@ -196,12 +194,6 @@ cancelDay = do reserved lis "cancelar"
                reserved lis "-d"
                day <- dayP
                return (CancelEventDay (UTCTime day (60*60*60 + 60*60*60)))
-
-cancelFullDay :: Parser Comm
-cancelFullDay = do reserved lis "cancelar"
-                   reserved lis "-f"
-                   day <- dayP
-                   return (CancelEventDay (UTCTime day (60*60*60 + 60*60*60)))
 
 dateP :: Parser UTCTime
 dateP = do

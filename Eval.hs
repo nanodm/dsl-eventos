@@ -215,8 +215,6 @@ evalComm (CancelEventDay date) filename = do
                                    removeFile filename
                                    renameFile tempName filename
 
-evalComm (CancelFullDay date) filename = do evalComm (CancelEventDay date) filename
-
 -- Funciones auxiliares (no se si irían en este archivo)
 -- auxiliar para InsertBetween (<=)
 agregarAux :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
