@@ -6,6 +6,7 @@ import System.IO
 import System.Directory
 import Data.Char
 import Data.Time
+import System.IO.Unsafe
 
 eval :: FileComm -> IO ()
 eval p = evalFileComm p
@@ -54,8 +55,9 @@ evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
                                                      then agregarAux2 date1 date2 desc filename
                                                      else return ()
 
-evalComm (InsertMonthly date1 desc) filename = do
-                                                agre
+evalComm (InsertMonthly date1 date2 desc) filename = do if date1 < date2
+                                                        then agregarAuxM date1 date2 desc filename
+                                                        else return ()
 
 evalComm (SelectDate date) filename = do
                                 content <- readFile filename
@@ -216,6 +218,14 @@ agregarAux3 firstDay date2 desc filename = if firstDay < date2
                                                    agregarAux3 (addOneWeek firstDay) date2 desc filename
                                            else return ()
 
+-- auxiliar para InsertMonthly
+agregarAuxM :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
+agregarAuxM date1 date2 desc filename = if date1 <= date2
+                                        then do evalComm (Insert date1 desc) filename
+                                                agregarAuxM (addOneMonth date1) date2 desc filename
+                                        else return ()
+
+
 printDate :: UTCTime -> String
 printDate date = formatTime defaultTimeLocale "%d/%m/%Y" date
 
@@ -227,6 +237,10 @@ addOneDay date = addUTCTime (realToFrac 86400) date -- agrego 86400 segundos, o 
 
 addOneWeek :: UTCTime -> UTCTime
 addOneWeek date = addUTCTime (realToFrac 604800) date -- agrego 604800, o sea una semana
+
+addOneMonth :: UTCTime -> UTCTime
+addOneMonth date = UTCTime (addGregorianMonthsClip 1 (pDate date)) (getTime date)
+
 
 formatEvent :: String -> String -> String -> String
 formatEvent date time desc = date ++ "," ++ time ++ "," ++ desc ++ "\n"
@@ -248,4 +262,10 @@ getDateByWeekDay date weekday = if ((formatTime defaultTimeLocale "%A" date) == 
                                 else getDateByWeekDay (addOneDay date) weekday
 
 getMonth :: UTCTime -> Integer
-getMonth = read (formatTime defaultTimeLocale "%m" getCurrentTime) :: Integer
+getMonth date = read (formatTime defaultTimeLocale "%m" date) :: Integer
+
+getTime :: UTCTime -> DiffTime
+getTime date = (fromInteger (read(formatTime defaultTimeLocale "%H" date) :: Integer) *60*60) + (fromInteger (read(formatTime defaultTimeLocale "%M" date) :: Integer)*60)
+
+pDate :: UTCTime -> Day
+pDate date = fromGregorian  (read (formatTime defaultTimeLocale "%Y" date) :: Integer)  (fromInteger (getMonth date)) (fromInteger(read (formatTime defaultTimeLocale "%d" date) :: Integer))

@@ -11,6 +11,7 @@ import Data.Time
 import Data.Time.Clock
 import qualified Text.ParserCombinators.Parsec.Token as Token
 import AST
+import System.IO.Unsafe
 
 lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
@@ -76,7 +77,8 @@ comm' = try insertP
 insertP = try insertFullDateP
           <|> try insertBetweenP
               <|> try insertAllDaysP
-                  <|> insertWeeklyP
+                  <|> try insertWeeklyP
+                      <|> insertMonthlyP 
 
 selectP = try selectFullDateP
           <|> selectDayP
@@ -142,15 +144,13 @@ insertMonthlyP :: Parser Comm
 insertMonthlyP = do reserved lis "agregar"
                     day <- natural lis
                     (try (reservedOp lis "/") <|> (reservedOp lis "-"))
-                    reserved lis "todos"
+                    reserved lis "todos"    
                     (try (reservedOp lis "/") <|> (reservedOp lis "-"))          
                     year <-  natural lis
                     hour <- hourP
                     desc <- str
-                    now <- getCurrentTime
-                    m <- formatTime defaultTimeLocale "%m" now
-                    return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger (read m :: Integer)) (fromInteger day)) hour)
-                                       (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromEnum (formatTime defaultTimeLocale "%m" getCurrentTime)) (fromInteger day))) hour)
+                    return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger 1) (fromInteger day)) hour)
+                                       (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
                                        desc)
 
 

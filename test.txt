@@ -6,6 +6,9 @@ ver 01/01/2020 13:00;
 agregar 05/01/2020 -r 10/01/2020 12:30 almuerzo de vacaciones;
 ver 08/01/2020 12:30;
 
+agregar 15/todos/2020 20:00 juntada;
+ver 15/11/2020;
+
 agregar todos/02/2020 22:00 cena en febrero;
 ver 06/02/2020 22:00;
 
