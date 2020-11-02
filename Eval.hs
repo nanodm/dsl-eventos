@@ -1,7 +1,7 @@
 module Eval where
 
 import AST
-import Funciones
+import Functions
 import System.IO
 import System.Directory
 import Data.Char
@@ -15,260 +15,224 @@ evalFileComm (New filename comm)  = do writeFile filename "Fecha,Horario,Descrip
                                        evalComm comm filename
 evalFileComm (Open filename comm) = evalComm comm filename
 
-evalComm :: Comm -> NombreArchivo -> IO ()
+evalComm :: Comm -> FileName -> IO ()
 evalComm Skip filename = return ()
 evalComm (Seq com1 com2) filename = do evalComm com1 filename
                                        evalComm com2 filename
 
-evalComm (InsertWeekly date1 date2 desc dia) filename = do 
-                                                          let day = getWeekDay dia
-                                                              firstDay = getDateByWeekDay date1 day
-                                                          do agregarAux3 firstDay date2 desc filename --putStrLn $ show firstDay
+evalComm (InsertWeekly date1 date2 desc day) filename = do 
+        let eventDay = getWeekDay day
+            firstDay = getDateByWeekDay date1 eventDay
+        do insertWeekly firstDay date2 desc filename --putStrLn $ show firstDay
 
 evalComm (Insert date desc) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent     = lines content
-                                  header           = head linedContent
-                                  eventos          = tail linedContent
-                                  date2            = printDate date
-                                  time             = printTime date
-                                  hasEvento        = (searchEvent date2 time eventos)
-                                  hasFullDayEvento = (searchFullDayEvent date2 eventos)
-                              if (hasEvento == True)
-                              then do putStrLn $ "Ya existe un evento el " ++ date2 ++ " a las " ++ time
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else if (hasFullDayEvento == True)
-                              then do putStrLn $ "Ya existe un evento el " ++ date2 ++ " que dura todo el día"
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ (formatEvent date2 time desc))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent     = lines content
+            header           = head linedContent
+            events           = tail linedContent
+            eventDate        = printDate date
+            eventTime        = printTime date
+            hasEvent         = (searchEventByFullDate eventDate eventTime events)
+            hasFullDayEvent  = (searchFullDayEvent eventDate events)
+        if (hasEvent == True)
+        then do putStrLn $ "Ya existe un evento el " ++ eventDate ++ " a las " ++ eventTime
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else if (hasFullDayEvent == True)
+        then do putStrLn $ "Ya existe un evento el " ++ eventDate ++ " que dura todo el día"
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines events) ++ (formatEvent eventDate eventTime desc))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 evalComm (InsertBetween date1 date2 desc) filename = if date1 > date2
-                                            then putStrLn "La primer fecha debe ser menor a la segunda."
-                                            else agregarAux date1 date2 desc filename
+                                                     then putStrLn "La primer fecha debe ser menor a la segunda."
+                                                     else insertBetween date1 date2 desc filename
 
 evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
-                                                     then agregarAux2 date1 date2 desc filename
+                                                     then insertAllDays date1 date2 desc filename
                                                      else return ()
 
 evalComm (InsertFullDay date desc) filename = do
-                                    handle <- openFile filename ReadMode
-                                    (tempName, tempHandle) <- openTempFile "." "temp"
-                                    content <- hGetContents handle
-                                    let linedContent = lines content
-                                        header       = head linedContent
-                                        eventos      = tail linedContent
-                                        date2        = printDate date
-                                        hasEvento    = (searchEventByDay date2 eventos)
-                                    if (hasEvento == True)
-                                    then do putStrLn $ "Ya existe un evento el " ++ date2
-                                            hClose handle
-                                            hClose tempHandle
-                                            removeFile tempName
-                                    else do hPutStr tempHandle $ (header ++ "\n" ++ (unlines eventos) ++ (formatEvent2 date2 desc))
-                                            hClose handle
-                                            hClose tempHandle
-                                            removeFile filename
-                                            renameFile tempName filename 
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            eventDate    = printDate date
+            hasEvent     = (searchEventByDay eventDate events)
+        if (hasEvent == True)
+        then do putStrLn $ "Ya existe un evento el " ++ eventDate
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do hPutStr tempHandle $ (header ++ "\n" ++ (unlines events) ++ (formatEventFullDay eventDate desc))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename 
 
 evalComm (SelectDate date) filename = do
-                                content <- readFile filename
-                                let linedContent   = lines content
-                                    eventos        = tail linedContent
-                                    eventoSelected = (verEvento (printDate date) eventos)
-                                putStr (unlines eventoSelected)
+        content <- readFile filename
+        let linedContent   = lines content
+            events         = tail linedContent
+            selectedEvent  = (getEventByDate (printDate date) events)
+        putStr (unlines selectedEvent)
 
 evalComm (SelectFullDate date) filename = do
-                                content <- readFile filename
-                                let linedContent   = lines content
-                                    eventos        = tail linedContent
-                                    eventoSelected = (verEvento2 (printDate date) (printTime date) eventos)
-                                putStr (unlines eventoSelected)
+        content <- readFile filename
+        let linedContent   = lines content
+            events         = tail linedContent
+            selectedEvent  = (getEventByFullDate (printDate date) (printTime date) events)
+        putStr (unlines selectedEvent)
 
 evalComm (UpdateDescription date desc) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  result       = (modificarDescripcionEvento (printDate date) (printTime date) desc eventos)
-                              if (eventos == result)
-                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            newEvents    = (updateEventDescription (printDate date) (printTime date) desc events)
+        if (events == newEvents)
+        then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEvents))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 evalComm (UpdateFullDate date newDate) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  result       = (modificarFechaEvento (printDate date) (printTime date) (printDate newDate) (printTime newDate) eventos)
-                              if (eventos == result)
-                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            newEvents    = (updateEventFullDate (printDate date) (printTime date) (printDate newDate) (printTime newDate) events)
+        if (events == newEvents)
+        then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEvents))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 evalComm (UpdateDate date newDate) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  result       = (modificarFechaEvento2 (printDate date) (printDate newDate) eventos)
-                              if (eventos == result)
-                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            newEvents    = (updateEventDate (printDate date) (printDate newDate) events)
+        if (events == newEvents)
+        then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEvents))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 evalComm (UpdateTime date newDate) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  result       = (modificarFechaEvento3 (printDate date) (printTime date) (printTime newDate) eventos)
-                              if (eventos == result)
-                              then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            newEvents    = (updateEventTime (printDate date) (printTime date) (printTime newDate) events)
+        if (events == newEvents)
+        then do putStrLn $ "No hay eventos para modificar el " ++ (printDate date)
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEvents))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 evalComm (CancelEventDate date) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  result       = (cancelarEvento2 (printDate date) (printTime date) eventos)
-                              if (eventos == result)
-                              then do putStrLn $ "No hay eventos para cancelar el " ++ (printDate date)
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            newEvents    = (cancelEventByFullDate (printDate date) (printTime date) events)
+        if (events == newEvents)
+        then do putStrLn $ "No hay eventos para cancelar el " ++ (printDate date)
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEvents))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 evalComm (CancelEventDay date) filename = do
-                              handle <- openFile filename ReadMode
-                              (tempName, tempHandle) <- openTempFile "." "temp"
-                              content <- hGetContents handle
-                              let linedContent = lines content
-                                  header       = head linedContent
-                                  eventos      = tail linedContent
-                                  result       = (cancelarEvento (printDate date) eventos)
-                              if (eventos == result)
-                              then do putStrLn $ "No hay eventos para cancelar el " ++ (printDate date)
-                                      hClose handle
-                                      hClose tempHandle
-                                      removeFile tempName
-                              else do
-                                   hPutStr tempHandle $ (header ++ "\n" ++ (unlines result))
-                                   hClose handle
-                                   hClose tempHandle
-                                   removeFile filename
-                                   renameFile tempName filename
+        handle <- openFile filename ReadMode
+        (tempName, tempHandle) <- openTempFile "." "temp"
+        content <- hGetContents handle
+        let linedContent = lines content
+            header       = head linedContent
+            events       = tail linedContent
+            newEvents    = (cancelEventByDate (printDate date) events)
+        if (events == newEvents)
+        then do putStrLn $ "No hay eventos para cancelar el " ++ (printDate date)
+                hClose handle
+                hClose tempHandle
+                removeFile tempName
+        else do
+                hPutStr tempHandle $ (header ++ "\n" ++ (unlines newEvents))
+                hClose handle
+                hClose tempHandle
+                removeFile filename
+                renameFile tempName filename
 
 -- Funciones auxiliares (no se si irían en este archivo)
 -- auxiliar para InsertBetween (<=)
-agregarAux :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
-agregarAux date1 date2 desc filename = if date1 <= date2
-                                       then
-                                         do evalComm (Insert date1 desc) filename
-                                            agregarAux (addOneDay date1) date2 desc filename
-                                       else return ()
+insertBetween :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+insertBetween date1 date2 desc filename = if date1 <= date2
+                                          then do evalComm (Insert date1 desc) filename
+                                                  insertBetween (addOneDay date1) date2 desc filename
+                                          else    return ()
 
 -- auxiliar para InsertAllDays (<)
-agregarAux2 :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
-agregarAux2 date1 date2 desc filename = if date1 < date2
-                                       then
-                                         do evalComm (Insert date1 desc) filename
-                                            agregarAux2 (addOneDay date1) date2 desc filename
-                                       else return ()
+insertAllDays :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+insertAllDays date1 date2 desc filename = if date1 < date2
+                                          then do evalComm (Insert date1 desc) filename
+                                                  insertAllDays (addOneDay date1) date2 desc filename
+                                          else    return ()
 
 -- auxiliar para InsertWeekly
-agregarAux3 :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
-agregarAux3 firstDay date2 desc filename = if firstDay < date2
-                                           then do evalComm (Insert firstDay desc) filename
-                                                   agregarAux3 (addOneWeek firstDay) date2 desc filename
-                                           else return ()
-
-printDate :: UTCTime -> String
-printDate date = formatTime defaultTimeLocale "%d/%m/%Y" date
-
-printTime :: UTCTime -> String
-printTime date = formatTime defaultTimeLocale "%H:%M" date
-
-addOneDay :: UTCTime -> UTCTime
-addOneDay date = addUTCTime (realToFrac 86400) date -- agrego 86400 segundos, o sea un día
-
-addOneWeek :: UTCTime -> UTCTime
-addOneWeek date = addUTCTime (realToFrac 604800) date -- agrego 604800, o sea una semana
-
-formatEvent :: String -> String -> String -> String
-formatEvent date time desc = date ++ "," ++ time ++ "," ++ desc ++ "\n"
-
-formatEvent2 :: String -> String -> String
-formatEvent2 date desc = date ++ "," ++ "(todo el día)" ++ "," ++ desc ++ "\n"
-
-getWeekDay :: String -> String
-getWeekDay weekday = case weekday of "lunes"     -> "Monday"
-                                     "martes"    -> "Tuesday"
-                                     "miercoles" -> "Wednesday"
-                                     "jueves"    -> "Thursday"
-                                     "viernes"   -> "Friday"
-                                     "sabado"    -> "Saturday"
-                                     "domingo"   -> "Sunday"
-
--- devuelve la fecha del primer "weekday" del mes
--- por ejemplo: getDateByWeekDay 2020-10-01 "Wednesday" --> 2020/10/07
-getDateByWeekDay :: UTCTime -> String -> UTCTime
-getDateByWeekDay date weekday = if ((formatTime defaultTimeLocale "%A" date) == weekday)
-                                then date
-                                else getDateByWeekDay (addOneDay date) weekday
+insertWeekly :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+insertWeekly day date desc filename = if day < date
+                                      then do evalComm (Insert day desc) filename
+                                              insertWeekly (addOneWeek day) date desc filename
+                                      else    return ()
