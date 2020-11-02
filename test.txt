@@ -33,4 +33,9 @@ ver 06/02/2020 22:00;
 cancelar -d 07/02/2020;
 ver 07/02/2020;
 
+agregar 21/09/2020 -f día de la primavera;
+ver 21/09/2020;
+
+cancelar -d 21/09/2020;
+
 skip

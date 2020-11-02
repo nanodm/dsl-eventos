@@ -17,7 +17,7 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "-m", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "cancelar", "todos"]
+                                  , reservedNames = ["agregar", "-r", "-m", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
                                   , reservedOpNames = ["/","-",":",";"]
                                   })
 
@@ -68,7 +68,6 @@ sequenceOfComm =
 
 comm' :: Parser Comm
 comm' = try insertP
-     --   <|>  insertBetweenP
        <|>  selectP
        <|>  updateP
        <|>  cancelP
@@ -76,9 +75,10 @@ comm' = try insertP
 
 insertP = try insertFullDateP
           <|> try insertBetweenP
-              <|> try insertAllDaysP
-                  <|> try insertWeeklyP
-                      <|> insertMonthlyP 
+          <|> try insertAllDaysP
+          <|> try insertWeeklyP
+          <|> try insertMonthlyP 
+          <|>     insertFullDay
 
 selectP = try selectFullDateP
           <|> selectDayP
@@ -153,6 +153,12 @@ insertMonthlyP = do reserved lis "agregar"
                                        (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
                                        desc)
 
+insertFullDay :: Parser Comm
+insertFullDay = do reserved lis "agregar"
+                   day1 <- dayP
+                   reserved lis "-f"
+                   desc <- str
+                   return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc)
 
 selectDayP :: Parser Comm
 selectDayP = do reserved lis "ver"

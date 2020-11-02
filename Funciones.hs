@@ -8,7 +8,9 @@ module Funciones
   modificarFechaEvento,
   modificarFechaEvento2,
   modificarFechaEvento3,
-  searchEvent
+  searchEvent,
+  searchFullDayEvent,
+  searchEventByDay,
 ) where
 
 import AST
@@ -136,4 +138,25 @@ searchEvent date time (x:xs) =
                isEvento             = if (fecha == date && hora == time)
                                       then True
                                       else (searchEvent date time xs)
+           in isEvento
+
+searchFullDayEvent :: String -> [String] -> Bool
+searchFullDayEvent _ [] = False
+searchFullDayEvent date (x:xs) =
+           let fechaHoraDescripcion = getFechaHoraDescripcion x
+               fecha                = fechaHoraDescripcion !! 0
+               hora                 = fechaHoraDescripcion !! 1
+               isEvento             = if (fecha == date && hora == "(todo el día)")
+                                      then True
+                                      else (searchFullDayEvent date xs)
+           in isEvento
+
+searchEventByDay :: String -> [String] -> Bool
+searchEventByDay _ [] = False
+searchEventByDay date (x:xs) =
+           let fechaHoraDescripcion = getFechaHoraDescripcion x
+               fecha                = fechaHoraDescripcion !! 0
+               isEvento             = if (fecha == date)
+                                      then True
+                                      else (searchEventByDay date xs)
            in isEvento

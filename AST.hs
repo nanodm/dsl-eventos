@@ -10,6 +10,7 @@ data Comm = Insert UTCTime Descripcion -- agrega un evento en una fecha
             | InsertAllDays UTCTime UTCTime Descripcion -- agrega el mismo evento todos los días de un mes
             | InsertWeekly UTCTime UTCTime Descripcion String -- agrega el mismo evento todos los días específicos de un mes
             | InsertMonthly UTCTime UTCTime Descripcion
+            | InsertFullDay UTCTime Descripcion -- agrega un evento todo el día
             | UpdateDescription UTCTime Descripcion
             | UpdateFullDate UTCTime UTCTime
             | UpdateDate UTCTime UTCTime
