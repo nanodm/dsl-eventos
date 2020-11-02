@@ -1,5 +1,0 @@
-> parse (totParser insertP) "" "agregar 21/12/2020 00:00 mi cumple"
-Right (Insert 2020-12-21 00:00:00 UTC "mi cumple")
-
-> parse (totParser comm) "" "agregar 12/12/2020 00:00 cumpleaños; agregarEntre 24/12/2020 25/12/2020 12:30 navidad"
-Right (Seq (Insert 2020-12-12 00:00:00 UTC "cumple ailen") (InsertBetween 2020-12-24 12:30:00 UTC 2020-12-25 12:30:00 UTC "navidad"))
