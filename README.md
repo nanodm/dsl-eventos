@@ -1,5 +1,11 @@
 # dsl-eventos
 
+## Cómo ejecutar el proyecto
+> ghci Main.hs
+> run "test.txt"
+
+El archivo test.txt es el que contiene los comandos del DSL diseñado y los resultados se ven en el archivo csv especificado en el mismo.
+
 ## Comandos disponibles
 
 ### Agregar
@@ -15,6 +21,9 @@ agregar todos/[mes]/[año] [hora] [descripción] <br/> **Por ejemplo:** agregar 
 
 ##### _Agregar el mismo evento todos los días específicos de un mes_
 agregar [día_de_la_semana]/[mes]/[año] [hora] [descripción] <br/> **Por ejemplo:** agregar miercoles/10/2020 12:30 TODOS LOS MIERCOLES DE OCTUBRE; <br/>
+
+##### _Agregar un evento todo el día_
+agregar [fecha] -f [descripción]; <br/> **Por ejemplo:** agregar 21/09/2020 -f día de la primavera;
 
 ### Modificar
 
