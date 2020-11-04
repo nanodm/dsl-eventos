@@ -68,6 +68,9 @@ makeStr []     = []
 makeStr [x]    = x
 makeStr (x:xs) = x ++ [' '] ++ makeStr xs
 
+-- lambdaTest :: [String] -> String
+-- lambdaTest = \string -> makeStr (sepBySpace string)
+
 comm = parens lis comm
    <|> sequenceOfComm
 
