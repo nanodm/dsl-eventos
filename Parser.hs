@@ -49,13 +49,24 @@ openFileP = do reserved lis "abrir"
                return (Open (filename ++ ".csv") seq)
 
 str :: Parser String
-str = do sp  <- many space
-         x   <- alphaNum
-         sp2 <- many space
-         xs  <- many str
-         let string = (sp)++[x]++(sp2)++(concat xs)
-             string2 = reverse $ removeSpaces $ reverse string
+str = do sp  <- many space -- parsea todos los espacios al inicio de un String
+         x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del string
+         sp2 <- many space -- parsea espacios que pueda haber entre palabras
+         xs  <- many str   -- se llama recursivamente para parsear cada caracter que compone el string
+         let string = [x]++(sp2)++(concat xs) -- string con el primer caracter encontrado + espacios y palabras
+             string2 = makeStr (sepBySpace string) -- elimino los espacios del final
          return string2
+
+sepBySpace     :: String -> [String]
+sepBySpace s =  case dropWhile (==' ') s of
+                      "" -> []
+                      s' -> w : sepBySpace s''
+                            where (w, s'') = break (==' ') s'
+
+makeStr :: [String] -> String
+makeStr []     = []
+makeStr [x]    = x
+makeStr (x:xs) = x ++ [' '] ++ makeStr xs
 
 comm = parens lis comm
    <|> sequenceOfComm
