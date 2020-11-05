@@ -39,42 +39,29 @@ newFileP :: Parser FileComm
 newFileP = do reserved lis "crear"
               filename <- str
               reservedOp lis ";"
-              seq <- comm
+              seq <- sequenceOfComm
               return (New (filename ++ ".csv") seq)
 
 openFileP :: Parser FileComm
 openFileP = do reserved lis "abrir"
                filename <- str
                reservedOp lis ";"
-               seq <- comm
+               seq <- sequenceOfComm
                return (Open (filename ++ ".csv") seq)
 
 str :: Parser String
-str = do --sp  <- many space -- parsea todos los espacios al inicio de un String
-         x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del string
+str = do x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del string. No falla si encuentra espacios
          sp  <- many space -- parsea espacios que pueda haber entre palabras
          xs  <- many str   -- se llama recursivamente para parsear cada caracter que compone el string
-         let string = [x]++(sp)++(concat xs) -- string con el primer caracter encontrado + espacios y palabras
-             string2 = trim string--makeStr (sepBySpace string) -- elimino los espacios del final
-         return string2
+         let string = dropWhileEnd isSpace ([x]++(sp)++(concat xs)) -- string con el primer caracter encontrado + espacios y palabras. Le quito los espacios finales
+         return string
 
--- Falta comentar qué hace esta función
-trim :: String -> String
-trim = dropWhileEnd isSpace . dropWhile isSpace
+-- dropWhileEnd :: condition -> list -> shorter-list
+-- dropWhileEnd is similar to dropWhile, but instead of removing elements from the beginning of the list, it removes them from the end instead.
+-- The dropWhileEnd function drops the largest suffix of a list in which the given predicate holds for all elements.
 
--- sepBySpace     :: String -> [String]
--- sepBySpace s =  case dropWhile (==' ') s of
---                       "" -> []
---                       s' -> w : sepBySpace s''
---                             where (w, s'') = break (==' ') s'
-
--- makeStr :: [String] -> String
--- makeStr []     = []
--- makeStr [x]    = x
--- makeStr (x:xs) = x ++ [' '] ++ makeStr xs
-
-comm = parens lis comm
-   <|> sequenceOfComm
+-- dropWhile :: condition -> list -> shorter-list
+-- dropWhile is similar to takeWhile, but instead of selecting elements based on the given condition, it removes them from the beginning of the list instead.
 
 sequenceOfComm = do list <- (sepBy1 comm' (semi lis))
                     return $ (listToSeq list)
