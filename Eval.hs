@@ -247,7 +247,7 @@ agregarAux3 firstDay date2 desc filename = if firstDay < date2
 agregarAuxM :: UTCTime -> UTCTime -> Descripcion -> NombreArchivo -> IO ()
 agregarAuxM date1 date2 desc filename = if date1 <= date2
                                         then do evalComm (Insert date1 desc) filename
-                                                agregarAuxM (addOneMonth date1) date2 desc filename
+                                                agregarAuxM (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
                                         else return ()
 
 
@@ -297,3 +297,6 @@ getTime date = (fromInteger (read(formatTime defaultTimeLocale "%H" date) :: Int
 
 pDate :: UTCTime -> Day
 pDate date = fromGregorian  (read (formatTime defaultTimeLocale "%Y" date) :: Integer)  (fromInteger (getMonth date)) (fromInteger(read (formatTime defaultTimeLocale "%d" date) :: Integer))
+
+utcTimeDayFix :: UTCTime -> UTCTime -> UTCTime
+utcTimeDayFix dateWr dateR = UTCTime (fromGregorian (read (formatTime defaultTimeLocale "%Y" dateWr) :: Integer)  (fromInteger (getMonth dateWr)) (fromInteger(read (formatTime defaultTimeLocale "%d" dateR) :: Integer))) (getTime dateWr)
