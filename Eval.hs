@@ -6,6 +6,7 @@ import System.IO
 import System.Directory
 import Data.Char
 import Data.Time
+import System.IO.Unsafe
 
 eval :: FileComm -> IO ()
 eval p = evalFileComm p
@@ -61,6 +62,9 @@ evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
                                                      then insertAllDays date1 date2 desc filename
                                                      else return ()
 
+evalComm (InsertMonthly date1 date2 desc) filename = do if date1 < date2
+                                                        then agregarAuxM date1 date2 desc filename
+                                                        else return ()
 evalComm (InsertFullDay date desc) filename = do
         handle <- openFile filename ReadMode
         (tempName, tempHandle) <- openTempFile "." "temp"
@@ -236,3 +240,17 @@ insertWeekly day date desc filename = if day < date
                                       then do evalComm (Insert day desc) filename
                                               insertWeekly (addOneWeek day) date desc filename
                                       else    return ()
+agregarAux3 :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+agregarAux3 firstDay date2 desc filename = if firstDay < date2
+                                           then do evalComm (Insert firstDay desc) filename
+                                                   agregarAux3 (addOneWeek firstDay) date2 desc filename
+                                           else return ()
+
+-- auxiliar para InsertMonthly
+agregarAuxM :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+agregarAuxM date1 date2 desc filename = if date1 <= date2
+                                        then do evalComm (Insert date1 desc) filename
+                                                agregarAuxM (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
+                                        else return ()
+
+

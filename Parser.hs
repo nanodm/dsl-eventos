@@ -11,13 +11,16 @@ import Data.Time
 import Data.Time.Clock
 import qualified Text.ParserCombinators.Parsec.Token as Token
 import AST
+import System.IO.Unsafe
 
 lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["crear", "abrir", "agregar", "-r", "ver", "skip", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
-                                  , reservedOpNames = ["/",":",";"]
+                                  --, reservedNames = ["crear", "abrir", "agregar", "-r", "ver", "skip", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
+                                  --, reservedOpNames = ["/",":",";"]
+                                  , reservedNames = ["agregar", "-r", "-m", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
+                                  , reservedOpNames = ["/","-",":",";"]
                                   })
 
 parseComm :: SourceName -> String -> Either ParseError FileComm
@@ -71,10 +74,11 @@ comm' = try insertP
        <|>  skipComm
 
 insertP = try insertFullDateP
-      <|> try insertBetweenP
-      <|> try insertAllDaysP
-      <|> try insertWeeklyP
-      <|>     insertFullDayP
+        <|> try insertBetweenP
+        <|> try insertAllDaysP
+        <|> try insertWeeklyP
+        <|> try insertMonthlyP 
+        <|>     insertFullDay
 
 selectP = try selectFullDateP
           <|> selectDayP
@@ -136,12 +140,25 @@ insertWeeklyP = do reserved lis "agregar"
                                         (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))) hour)
                                         desc weekday)
 
-insertFullDayP :: Parser Comm
-insertFullDayP = do reserved lis "agregar"
-                    day1 <- dayP
-                    reserved lis "-f"
+insertMonthlyP :: Parser Comm
+insertMonthlyP = do reserved lis "agregar"
+                    day <- natural lis
+                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))
+                    reserved lis "todos"    
+                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))          
+                    year <-  natural lis
+                    hour <- hourP
                     desc <- str
-                    return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc)
+                    return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger 1) (fromInteger day)) hour)
+                                       (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
+                                       desc)
+
+insertFullDay :: Parser Comm
+insertFullDay = do reserved lis "agregar"
+                   day1 <- dayP
+                   reserved lis "-f"
+                   desc <- str
+                   return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc)
 
 selectDayP :: Parser Comm
 selectDayP = do reserved lis "ver"

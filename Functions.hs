@@ -18,7 +18,7 @@ module Functions
   formatEventFullDay,
   getWeekDay,
   getDateByWeekDay,
-) where
+pDate,utcTimeDayFix,addOneMonth) where
 
 import AST
 import Data.Time
@@ -184,6 +184,9 @@ addOneDay date = addUTCTime (realToFrac 86400) date -- agrego 86400 segundos, o 
 addOneWeek :: UTCTime -> UTCTime
 addOneWeek date = addUTCTime (realToFrac 604800) date -- agrego 604800 segundos, o sea una semana
 
+addOneMonth :: UTCTime -> UTCTime
+addOneMonth date = UTCTime (addGregorianMonthsClip 1 (pDate date)) (getTime date)
+
 formatEvent :: String -> String -> String -> String
 formatEvent date time desc = date ++ "," ++ time ++ "," ++ desc ++ "\n"
 
@@ -205,3 +208,15 @@ getDateByWeekDay :: UTCTime -> String -> UTCTime
 getDateByWeekDay date weekday = if ((formatTime defaultTimeLocale "%A" date) == weekday)
                                 then date
                                 else getDateByWeekDay (addOneDay date) weekday
+
+getMonth :: UTCTime -> Integer
+getMonth date = read (formatTime defaultTimeLocale "%m" date) :: Integer
+
+getTime :: UTCTime -> DiffTime
+getTime date = (fromInteger (read(formatTime defaultTimeLocale "%H" date) :: Integer) *60*60) + (fromInteger (read(formatTime defaultTimeLocale "%M" date) :: Integer)*60)
+
+pDate :: UTCTime -> Day
+pDate date = fromGregorian  (read (formatTime defaultTimeLocale "%Y" date) :: Integer)  (fromInteger (getMonth date)) (fromInteger(read (formatTime defaultTimeLocale "%d" date) :: Integer))
+
+utcTimeDayFix :: UTCTime -> UTCTime -> UTCTime
+utcTimeDayFix dateWr dateR = UTCTime (fromGregorian (read (formatTime defaultTimeLocale "%Y" dateWr) :: Integer)  (fromInteger (getMonth dateWr)) (fromInteger(read (formatTime defaultTimeLocale "%d" dateR) :: Integer))) (getTime dateWr)
