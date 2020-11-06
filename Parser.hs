@@ -60,7 +60,7 @@ str = do x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del st
          let string = dropWhileEnd isSpace ([x]++(sp)++(concat xs)) -- string con el primer caracter encontrado + espacios y palabras. Le quito los espacios finales con dropWhileEnd
          return string
 
--- devuelve los comandos ya parseados en una lista. El separador de cada comando es un punto y coma
+-- devuelve los comandos ya parseados en una lista. El separador entre cada comando es un punto y coma
 sequenceOfComm = do list <- (sepBy1 comm' (semi languageDef))
                     return $ (listToSeq list)
 
@@ -72,14 +72,15 @@ comm' = try insertP
        <|>  skipComm
 
 insertP = try insertFullDateP
-        <|> try insertBetweenP
-        <|> try insertAllDaysP
-        <|> try insertWeeklyP
-        <|> try insertMonthlyP 
-        <|>     insertFullDay
+      <|> try insertBetweenP
+      <|> try insertAllDaysP
+      <|> try insertWeeklyP
+      <|> try insertMonthlyP 
+      <|>     insertFullDay
 
 selectP = try selectFullDateP
-          <|> selectDayP
+      <|> try selectBetweenP
+      <|>     selectDayP
  
 updateP = try updateDescriptionP
       <|> try updateFullDateP
@@ -168,6 +169,13 @@ selectFullDateP :: Parser Comm
 selectFullDateP = do reserved languageDef "ver"
                      date <- dateP
                      return (SelectFullDate date)
+
+selectBetweenP :: Parser Comm
+selectBetweenP = do reserved languageDef "ver"
+                    day1 <- dayP
+                    reserved languageDef "-r"
+                    day2 <- dayP
+                    return (SelectBetween (UTCTime day1 (12*60*60 + 60*60)) (UTCTime day2 (12*60*60 + 60*60)))
 
 updateDescriptionP :: Parser Comm
 updateDescriptionP = do reserved languageDef "modificar"

@@ -101,6 +101,10 @@ evalComm (SelectFullDate date) filename = do
             selectedEvent  = (getEventByFullDate (printDate date) (printTime date) events)
         putStr (unlines selectedEvent)
 
+evalComm (SelectBetween date1 date2) filename = if date1 > date2
+                                                then putStrLn "La primer fecha debe ser menor a la segunda."
+                                                else selectBetween date1 date2 filename
+
 evalComm (UpdateDescription date desc) filename = do
         handle <- openFile filename ReadMode
         (tempName, tempHandle) <- openTempFile "." "temp"
@@ -227,6 +231,12 @@ insertBetween date1 date2 desc filename = if date1 <= date2
                                           then do evalComm (Insert date1 desc) filename
                                                   insertBetween (addOneDay date1) date2 desc filename
                                           else    return ()
+
+selectBetween :: UTCTime -> UTCTime -> FileName -> IO ()
+selectBetween date1 date2 filename = if date1 <= date2
+                                     then do evalComm (SelectDate date1) filename
+                                             selectBetween (addOneDay date1) date2 filename
+                                     else    return ()
 
 -- auxiliar para InsertAllDays
 insertAllDays :: UTCTime -> UTCTime -> Description -> FileName -> IO ()

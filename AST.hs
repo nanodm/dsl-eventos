@@ -5,6 +5,9 @@ import Data.Time
 type Description = String
 type FileName = String
 
+data FileComm = New FileName Comm
+                | Open FileName Comm deriving Show
+
 data Comm = Insert UTCTime Description -- agrega un evento en una fecha
             | InsertBetween UTCTime UTCTime Description -- agrega el mismo evento entre 2 fechas
             | InsertAllDays UTCTime UTCTime Description -- agrega el mismo evento todos los días de un mes
@@ -17,12 +20,8 @@ data Comm = Insert UTCTime Description -- agrega un evento en una fecha
             | UpdateTime UTCTime UTCTime
             | CancelEventDate UTCTime
             | CancelEventDay UTCTime
-            | Seq Comm Comm
             | SelectDate UTCTime
             | SelectFullDate UTCTime
-            | Skip
- deriving Show
-
-data FileComm = New FileName Comm
-                | Open FileName Comm
- deriving Show
+            | SelectBetween UTCTime UTCTime
+            | Seq Comm Comm
+            | Skip deriving Show
