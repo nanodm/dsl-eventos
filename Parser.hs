@@ -1,5 +1,6 @@
 module Parser where
 
+import AST
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
@@ -9,9 +10,8 @@ import Text.Parsec.Language (emptyDef)
 import Data.Char (isSpace)
 import Data.Time
 import Data.Time.Clock
+import Data.List
 import qualified Text.ParserCombinators.Parsec.Token as Token
-import AST
-import System.IO.Unsafe
 
 lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
@@ -50,13 +50,11 @@ openFileP = do reserved lis "abrir"
                return (Open (filename ++ ".csv") seq)
 
 str :: Parser String
-str = do sp  <- many space
-         x   <- alphaNum
-         sp2 <- many space
-         xs  <- many str
-         let string = (sp)++[x]++(sp2)++(concat xs)
-             string2 = reverse $ removeSpaces $ reverse string
-         return string2
+str = do x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del string. No falla si encuentra espacios
+         sp  <- many space -- parsea espacios que pueda haber entre palabras
+         xs  <- many str   -- se llama recursivamente para parsear cada caracter que compone el string
+         let string = dropWhileEnd isSpace ([x]++(sp)++(concat xs)) -- string con el primer caracter encontrado + espacios y palabras. Le quito los espacios finales
+         return string
 
 sequenceOfComm = do list <- (sepBy1 comm' (semi lis))
                     return $ (listToSeq list)
