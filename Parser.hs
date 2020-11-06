@@ -13,11 +13,12 @@ import Data.Time.Clock
 import Data.List
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
-lis :: TokenParser u
-lis = makeTokenParser (emptyDef   { commentStart  = "/*"
+-- definición de nustro lenguaje
+languageDef :: TokenParser u
+languageDef = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  , reservedNames = ["agregar", "-r", "-m", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
+                                  , reservedNames = ["crear", "abrir", "agregar", "ver", "modificar", "cancelar", "todos", "skip", "-desc", "-r", "-m", "-d", "-t", "-f", "-fd"]
                                   , reservedOpNames = ["/",":",";"]
                                   })
 
@@ -26,7 +27,7 @@ parseComm = parse (totParser fileP)
 
 -- Funciones para facilitar el testing del parser.
 totParser :: Parser a -> Parser a
-totParser p = do whiteSpace lis
+totParser p = do whiteSpace languageDef
                  t <- p
                  eof
                  return t
@@ -36,16 +37,16 @@ fileP = newFileP
     <|> openFileP
 
 newFileP :: Parser FileComm
-newFileP = do reserved lis "crear"
+newFileP = do reserved languageDef "crear"
               filename <- str
-              reservedOp lis ";"
+              reservedOp languageDef ";"
               seq <- sequenceOfComm
               return (New (filename ++ ".csv") seq)
 
 openFileP :: Parser FileComm
-openFileP = do reserved lis "abrir"
+openFileP = do reserved languageDef "abrir"
                filename <- str
-               reservedOp lis ";"
+               reservedOp languageDef ";"
                seq <- sequenceOfComm
                return (Open (filename ++ ".csv") seq)
 
@@ -56,7 +57,7 @@ str = do x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del st
          let string = dropWhileEnd isSpace ([x]++(sp)++(concat xs)) -- string con el primer caracter encontrado + espacios y palabras. Le quito los espacios finales
          return string
 
-sequenceOfComm = do list <- (sepBy1 comm' (semi lis))
+sequenceOfComm = do list <- (sepBy1 comm' (semi languageDef))
                     return $ (listToSeq list)
 
 comm' :: Parser Comm
@@ -89,30 +90,30 @@ listToSeq [x]    = x
 listToSeq (x:xs) = Seq x (listToSeq xs)
 
 skipComm :: Parser Comm
-skipComm = reserved lis "skip" >> return Skip
+skipComm = reserved languageDef "skip" >> return Skip
 
 insertFullDateP :: Parser Comm
-insertFullDateP = do reserved lis "agregar"
+insertFullDateP = do reserved languageDef "agregar"
                      date <- dateP
                      desc <- str
                      return (Insert date desc)
 
 insertBetweenP :: Parser Comm
-insertBetweenP = do reserved lis "agregar"
+insertBetweenP = do reserved languageDef "agregar"
                     day1 <- dayP
-                    reserved lis "-r"
+                    reserved languageDef "-r"
                     day2 <- dayP
                     hour <- hourP
                     desc <- str
                     return (InsertBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
 
 insertAllDaysP :: Parser Comm
-insertAllDaysP = do reserved lis "agregar"
-                    reserved lis "todos"
-                    try (reservedOp lis "/")
-                    month <-  natural lis
-                    try (reservedOp lis "/")          
-                    year <-  natural lis
+insertAllDaysP = do reserved languageDef "agregar"
+                    reserved languageDef "todos"
+                    try (reservedOp languageDef "/")
+                    month <-  natural languageDef
+                    try (reservedOp languageDef "/")          
+                    year <-  natural languageDef
                     hour <- hourP
                     desc <- str
                     return (InsertAllDays (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))
@@ -121,12 +122,12 @@ insertAllDaysP = do reserved lis "agregar"
                                           hour) desc)
 
 insertWeeklyP :: Parser Comm
-insertWeeklyP = do reserved lis "agregar"
+insertWeeklyP = do reserved languageDef "agregar"
                    weekday <- str
-                   try (reservedOp lis "/")
-                   month <- natural lis
-                   try (reservedOp lis "/")
-                   year <- natural lis
+                   try (reservedOp languageDef "/")
+                   month <- natural languageDef
+                   try (reservedOp languageDef "/")
+                   year <- natural languageDef
                    hour <- hourP
                    desc <- str
                    return (InsertWeekly (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)) hour)
@@ -134,12 +135,12 @@ insertWeeklyP = do reserved lis "agregar"
                                         desc weekday)
 
 insertMonthlyP :: Parser Comm
-insertMonthlyP = do reserved lis "agregar"
-                    day <- natural lis
-                    (try (reservedOp lis "/"))
-                    reserved lis "todos"    
-                    (try (reservedOp lis "/"))          
-                    year <-  natural lis
+insertMonthlyP = do reserved languageDef "agregar"
+                    day <- natural languageDef
+                    (try (reservedOp languageDef "/"))
+                    reserved languageDef "todos"    
+                    (try (reservedOp languageDef "/"))          
+                    year <-  natural languageDef
                     hour <- hourP
                     desc <- str
                     return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger 1) (fromInteger day)) hour)
@@ -147,59 +148,59 @@ insertMonthlyP = do reserved lis "agregar"
                                           desc)
 
 insertFullDay :: Parser Comm
-insertFullDay = do reserved lis "agregar"
+insertFullDay = do reserved languageDef "agregar"
                    day1 <- dayP
-                   reserved lis "-f"
+                   reserved languageDef "-f"
                    desc <- str
                    return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc)
 
 selectDayP :: Parser Comm
-selectDayP = do reserved lis "ver"
+selectDayP = do reserved languageDef "ver"
                 day <- dayP
                 return (SelectDate (UTCTime day (60*60*60 + 60*60*60)))
 
 selectFullDateP :: Parser Comm
-selectFullDateP = do reserved lis "ver"
+selectFullDateP = do reserved languageDef "ver"
                      date <- dateP
                      return (SelectFullDate date)
 
 updateDescriptionP :: Parser Comm
-updateDescriptionP = do reserved lis "modificar"
+updateDescriptionP = do reserved languageDef "modificar"
                         date <- dateP
-                        reserved lis "-desc"
+                        reserved languageDef "-desc"
                         desc <- str
                         return (UpdateDescription date desc)
 
 updateFullDateP :: Parser Comm
-updateFullDateP = do reserved lis "modificar"
+updateFullDateP = do reserved languageDef "modificar"
                      date <- dateP
-                     reserved lis "-fd"
+                     reserved languageDef "-fd"
                      newDate <- dateP
                      return (UpdateFullDate date newDate) 
 
 updateDateP :: Parser Comm
-updateDateP = do reserved lis "modificar"
+updateDateP = do reserved languageDef "modificar"
                  date <- dateP
-                 reserved lis "-d"
+                 reserved languageDef "-d"
                  newDay <- dayP
                  return (UpdateDate date (UTCTime newDay (60*60*60 + 60*60*60))) 
 
 updateTimeP :: Parser Comm
-updateTimeP = do reserved lis "modificar"
+updateTimeP = do reserved languageDef "modificar"
                  date <- dateP
-                 reserved lis "-t"
+                 reserved languageDef "-t"
                  newTime <- hourP
                  return (UpdateTime date (UTCTime (fromGregorian (fromInteger 2020) (fromInteger 01) (fromInteger 01)) newTime)) 
 
 cancelDate :: Parser Comm
-cancelDate = do reserved lis "cancelar"
-                reserved lis "-fd"
+cancelDate = do reserved languageDef "cancelar"
+                reserved languageDef "-fd"
                 date <- dateP
                 return (CancelEventDate date)
 
 cancelDay :: Parser Comm
-cancelDay = do reserved lis "cancelar"
-               reserved lis "-d"
+cancelDay = do reserved languageDef "cancelar"
+               reserved languageDef "-d"
                day <- dayP
                return (CancelEventDay (UTCTime day (60*60*60 + 60*60*60)))
 
@@ -209,17 +210,17 @@ dateP = do day  <- dayP
            return (UTCTime day hour)
 
 dayP :: Parser Day
-dayP = do day    <- natural lis
-          try (reservedOp lis "/")
-          month  <-  natural lis
-          try (reservedOp lis "/")          
-          year   <-  natural lis
+dayP = do day    <- natural languageDef
+          try (reservedOp languageDef "/")
+          month  <-  natural languageDef
+          try (reservedOp languageDef "/")          
+          year   <-  natural languageDef
           return (fromGregorian (fromInteger year) (fromInteger month) (fromInteger day))
 
 hourP :: Parser DiffTime
-hourP = do hour <- natural lis
-           reservedOp lis ":"
-           minute <- natural lis
+hourP = do hour <- natural languageDef
+           reservedOp languageDef ":"
+           minute <- natural languageDef
            return ((fromInteger hour*60*60) + (fromInteger minute*60))
 
 removeSpaces :: String -> String
