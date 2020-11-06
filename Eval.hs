@@ -24,7 +24,7 @@ evalComm (Seq com1 com2) filename = do evalComm com1 filename
 evalComm (InsertWeekly date1 date2 desc day) filename = do 
         let eventDay = getWeekDay day
             firstDay = getDateByWeekDay date1 eventDay
-        do insertWeekly firstDay date2 desc filename --putStrLn $ show firstDay
+        do insertWeekly firstDay date2 desc filename
 
 evalComm (Insert date desc) filename = do
         handle <- openFile filename ReadMode
@@ -63,7 +63,7 @@ evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
                                                      else return ()
 
 evalComm (InsertMonthly date1 date2 desc) filename = do if date1 < date2
-                                                        then agregarAuxM date1 date2 desc filename
+                                                        then insertMonthly date1 date2 desc filename
                                                         else return ()
 evalComm (InsertFullDay date desc) filename = do
         handle <- openFile filename ReadMode
@@ -219,15 +219,14 @@ evalComm (CancelEventDay date) filename = do
                 removeFile filename
                 renameFile tempName filename
 
--- Funciones auxiliares (no se si irían en este archivo)
--- auxiliar para InsertBetween (<=)
+-- auxiliar para InsertBetween
 insertBetween :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
 insertBetween date1 date2 desc filename = if date1 <= date2
                                           then do evalComm (Insert date1 desc) filename
                                                   insertBetween (addOneDay date1) date2 desc filename
                                           else    return ()
 
--- auxiliar para InsertAllDays (<)
+-- auxiliar para InsertAllDays
 insertAllDays :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
 insertAllDays date1 date2 desc filename = if date1 < date2
                                           then do evalComm (Insert date1 desc) filename
@@ -240,17 +239,12 @@ insertWeekly day date desc filename = if day < date
                                       then do evalComm (Insert day desc) filename
                                               insertWeekly (addOneWeek day) date desc filename
                                       else    return ()
-agregarAux3 :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
-agregarAux3 firstDay date2 desc filename = if firstDay < date2
-                                           then do evalComm (Insert firstDay desc) filename
-                                                   agregarAux3 (addOneWeek firstDay) date2 desc filename
-                                           else return ()
 
 -- auxiliar para InsertMonthly
-agregarAuxM :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
-agregarAuxM date1 date2 desc filename = if date1 <= date2
+insertMonthly :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+insertMonthly date1 date2 desc filename = if date1 <= date2
                                         then do evalComm (Insert date1 desc) filename
-                                                agregarAuxM (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
-                                        else return ()
+                                                insertMonthly (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
+                                        else    return ()
 
 

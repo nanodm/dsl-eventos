@@ -17,10 +17,8 @@ lis :: TokenParser u
 lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentEnd    = "*/"
                                   , commentLine   = "//"
-                                  --, reservedNames = ["crear", "abrir", "agregar", "-r", "ver", "skip", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
-                                  --, reservedOpNames = ["/",":",";"]
                                   , reservedNames = ["agregar", "-r", "-m", "ver", "skip", "crear", "abrir", "modificar", "-desc", "-fd", "-d", "-t", "-f", "cancelar", "todos"]
-                                  , reservedOpNames = ["/","-",":",";"]
+                                  , reservedOpNames = ["/",":",";"]
                                   })
 
 parseComm :: SourceName -> String -> Either ParseError FileComm
@@ -41,14 +39,14 @@ newFileP :: Parser FileComm
 newFileP = do reserved lis "crear"
               filename <- str
               reservedOp lis ";"
-              seq <- comm
+              seq <- sequenceOfComm
               return (New (filename ++ ".csv") seq)
 
 openFileP :: Parser FileComm
 openFileP = do reserved lis "abrir"
                filename <- str
                reservedOp lis ";"
-               seq <- comm
+               seq <- sequenceOfComm
                return (Open (filename ++ ".csv") seq)
 
 str :: Parser String
@@ -59,9 +57,6 @@ str = do sp  <- many space
          let string = (sp)++[x]++(sp2)++(concat xs)
              string2 = reverse $ removeSpaces $ reverse string
          return string2
-
-comm = parens lis comm
-   <|> sequenceOfComm
 
 sequenceOfComm = do list <- (sepBy1 comm' (semi lis))
                     return $ (listToSeq list)
@@ -143,15 +138,15 @@ insertWeeklyP = do reserved lis "agregar"
 insertMonthlyP :: Parser Comm
 insertMonthlyP = do reserved lis "agregar"
                     day <- natural lis
-                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))
+                    (try (reservedOp lis "/"))
                     reserved lis "todos"    
-                    (try (reservedOp lis "/") <|> (reservedOp lis "-"))          
+                    (try (reservedOp lis "/"))          
                     year <-  natural lis
                     hour <- hourP
                     desc <- str
                     return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger 1) (fromInteger day)) hour)
-                                       (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
-                                       desc)
+                                          (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
+                                          desc)
 
 insertFullDay :: Parser Comm
 insertFullDay = do reserved lis "agregar"
