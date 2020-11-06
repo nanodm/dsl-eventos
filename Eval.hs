@@ -232,6 +232,7 @@ insertBetween date1 date2 desc filename = if date1 <= date2
                                                   insertBetween (addOneDay date1) date2 desc filename
                                           else    return ()
 
+-- auxiliar para SelectBetween
 selectBetween :: UTCTime -> UTCTime -> FileName -> IO ()
 selectBetween date1 date2 filename = if date1 <= date2
                                      then do evalComm (SelectDate date1) filename

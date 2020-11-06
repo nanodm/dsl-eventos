@@ -122,10 +122,9 @@ insertAllDaysP = do reserved languageDef "agregar"
                     year <-  natural languageDef
                     hour <- hourP
                     desc <- str
-                    return (InsertAllDays (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))
-                                          hour)
-                                          (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)))
-                                          hour) desc) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada día dentro del primero
+                    return (InsertAllDays (UTCTime (makeDay year month 01) hour)
+                                          (UTCTime (addGregorianMonthsClip 1 (makeDay year month 01)) hour)
+                                          desc) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada día dentro del primero
 
 insertWeeklyP :: Parser Comm
 insertWeeklyP = do reserved languageDef "agregar"
@@ -136,8 +135,8 @@ insertWeeklyP = do reserved languageDef "agregar"
                    year <- natural languageDef
                    hour <- hourP
                    desc <- str
-                   return (InsertWeekly (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)) hour)
-                                        (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))) hour)
+                   return (InsertWeekly (UTCTime (makeDay year month 01) hour)
+                                        (UTCTime (addGregorianMonthsClip 1 (makeDay year month 01)) hour)
                                         desc weekday) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada semana dentro del primero
 
 insertMonthlyP :: Parser Comm
@@ -149,8 +148,8 @@ insertMonthlyP = do reserved languageDef "agregar"
                     year <-  natural languageDef
                     hour <- hourP
                     desc <- str
-                    return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger 1) (fromInteger day)) hour)
-                                          (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
+                    return (InsertMonthly (UTCTime (makeDay year 01 day) hour)
+                                          (UTCTime (makeDay year 12 day) hour)
                                           desc) -- devuelvo el primer y último mes del año para poder iterar todo el año
 
 insertFullDay :: Parser Comm
@@ -203,7 +202,7 @@ updateTimeP = do reserved languageDef "modificar"
                  date <- dateP
                  reserved languageDef "-t"
                  newTime <- hourP
-                 return (UpdateTime date (UTCTime (fromGregorian (fromInteger 2020) (fromInteger 01) (fromInteger 01)) newTime)) -- la fecha no importa porque modificamos la hora
+                 return (UpdateTime date (UTCTime (makeDay 2020 01 01) newTime)) -- la fecha no importa porque modificamos la hora
 
 cancelDate :: Parser Comm
 cancelDate = do reserved languageDef "cancelar"
@@ -228,13 +227,17 @@ dayP = do day    <- natural languageDef
           month  <-  natural languageDef
           try (reservedOp languageDef "/")          
           year   <-  natural languageDef
-          return (fromGregorian (fromInteger year) (fromInteger month) (fromInteger day))
+          return (makeDay year month day)
 
 hourP :: Parser DiffTime
 hourP = do hour <- natural languageDef
            reservedOp languageDef ":"
            minute <- natural languageDef
            return ((fromInteger hour*60*60) + (fromInteger minute*60))
+
+-- construye un día dado año, mes y día. Para mejor legibilidad del parser
+makeDay :: Integer -> Integer -> Integer -> Day
+makeDay year month day = fromGregorian (fromInteger year) (fromInteger month) (fromInteger day)
 
 removeSpaces :: String -> String
 removeSpaces [] = []
