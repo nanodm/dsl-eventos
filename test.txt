@@ -12,6 +12,7 @@ ver 31/11/2020;
 
 agregar todos/02/2020 22:00 cena en febrero;
 ver 06/02/2020 22:00;
+ver todos/02/2020;
 
 agregar miercoles/10/2020 12:30 TODOS LOS MIERCOLES DE OCTUBRE;
 ver 21/10/2020 12:30;

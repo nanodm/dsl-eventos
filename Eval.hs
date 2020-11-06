@@ -105,6 +105,10 @@ evalComm (SelectBetween date1 date2) filename = if date1 > date2
                                                 then putStrLn "La primer fecha debe ser menor a la segunda."
                                                 else selectBetween date1 date2 filename
 
+evalComm (SelectAllDays date1 date2) filename = if date1 < date2
+                                                then selectAllDays date1 date2 filename
+                                                else return ()
+
 evalComm (UpdateDescription date desc) filename = do
         handle <- openFile filename ReadMode
         (tempName, tempHandle) <- openTempFile "." "temp"
@@ -232,13 +236,6 @@ insertBetween date1 date2 desc filename = if date1 <= date2
                                                   insertBetween (addOneDay date1) date2 desc filename
                                           else    return ()
 
--- auxiliar para SelectBetween
-selectBetween :: UTCTime -> UTCTime -> FileName -> IO ()
-selectBetween date1 date2 filename = if date1 <= date2
-                                     then do evalComm (SelectDate date1) filename
-                                             selectBetween (addOneDay date1) date2 filename
-                                     else    return ()
-
 -- auxiliar para InsertAllDays
 insertAllDays :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
 insertAllDays date1 date2 desc filename = if date1 < date2
@@ -259,3 +256,17 @@ insertMonthly date1 date2 desc filename = if date1 <= date2
                                         then do evalComm (Insert date1 desc) filename
                                                 insertMonthly (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
                                         else    return ()
+
+-- auxiliar para SelectBetween
+selectBetween :: UTCTime -> UTCTime -> FileName -> IO ()
+selectBetween date1 date2 filename = if date1 <= date2
+                                     then do evalComm (SelectDate date1) filename
+                                             selectBetween (addOneDay date1) date2 filename
+                                     else    return ()
+
+-- auxiliar para SelectAllDays
+selectAllDays :: UTCTime -> UTCTime -> FileName -> IO ()
+selectAllDays date1 date2 filename = if date1 < date2
+                                     then do evalComm (SelectDate date1) filename
+                                             selectAllDays (addOneDay date1) date2 filename
+                                     else    return ()

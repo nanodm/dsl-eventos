@@ -80,6 +80,7 @@ insertP = try insertFullDateP
 
 selectP = try selectFullDateP
       <|> try selectBetweenP
+      <|> try selectAllDaysP
       <|>     selectDayP
  
 updateP = try updateDescriptionP
@@ -175,6 +176,16 @@ selectBetweenP = do reserved languageDef "ver"
                     reserved languageDef "-r"
                     day2 <- dayP
                     return (SelectBetween (UTCTime day1 (12*60*60 + 60*60)) (UTCTime day2 (12*60*60 + 60*60)))
+
+selectAllDaysP :: Parser Comm
+selectAllDaysP = do reserved languageDef "ver"
+                    reserved languageDef "todos"
+                    try (reservedOp languageDef "/")
+                    month <-  natural languageDef
+                    try (reservedOp languageDef "/")          
+                    year <-  natural languageDef
+                    return (SelectAllDays (UTCTime (makeDay year month 01) (12*60*60 + 60*60))
+                                          (UTCTime (addGregorianMonthsClip 1 (makeDay year month 01)) (12*60*60 + 60*60)))
 
 updateDescriptionP :: Parser Comm
 updateDescriptionP = do reserved languageDef "modificar"
