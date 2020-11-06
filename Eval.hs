@@ -11,16 +11,18 @@ import System.IO.Unsafe
 eval :: FileComm -> IO ()
 eval p = evalFileComm p
 
+-- crea un archivo dado un filename, le agrega los headers y continua evaluando comandos
 evalFileComm :: FileComm -> IO ()
 evalFileComm (New filename comm)  = do writeFile filename "Fecha,Horario,Descripción\n"
                                        evalComm comm filename
+
+-- evalúa comandos de un programa dado un filename
 evalFileComm (Open filename comm) = evalComm comm filename
 
 evalComm :: Comm -> FileName -> IO ()
 evalComm Skip filename = return ()
 evalComm (Seq com1 com2) filename = do evalComm com1 filename
                                        evalComm com2 filename
-
 evalComm (InsertWeekly date1 date2 desc day) filename = do 
         let eventDay = getWeekDay day
             firstDay = getDateByWeekDay date1 eventDay
@@ -233,7 +235,7 @@ insertAllDays date1 date2 desc filename = if date1 < date2
                                                   insertAllDays (addOneDay date1) date2 desc filename
                                           else    return ()
 
--- auxiliar para InsertWeekly
+-- auxiliar para InsertWeekly. Itera por cada semana del mes e inserta el evento en el día correspondiente
 insertWeekly :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
 insertWeekly day date desc filename = if day < date
                                       then do evalComm (Insert day desc) filename
@@ -246,5 +248,3 @@ insertMonthly date1 date2 desc filename = if date1 <= date2
                                         then do evalComm (Insert date1 desc) filename
                                                 insertMonthly (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
                                         else    return ()
-
-

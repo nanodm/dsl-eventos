@@ -16,12 +16,13 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 -- definición de nustro lenguaje
 languageDef :: TokenParser u
 languageDef = makeTokenParser (emptyDef   { commentStart  = "/*"
-                                  , commentEnd    = "*/"
-                                  , commentLine   = "//"
-                                  , reservedNames = ["crear", "abrir", "agregar", "ver", "modificar", "cancelar", "todos", "skip", "-desc", "-r", "-m", "-d", "-t", "-f", "-fd"]
-                                  , reservedOpNames = ["/",":",";"]
-                                  })
+                                          , commentEnd    = "*/"
+                                          , commentLine   = "//"
+                                          , reservedNames = ["crear", "abrir", "agregar", "ver", "modificar", "cancelar", "todos", "skip", "-desc", "-r", "-m", "-d", "-t", "-f", "-fd"]
+                                          , reservedOpNames = ["/",":",";"]
+                                          })
 
+-- Donde comienza el parsing de todo el programa
 parseComm :: SourceName -> String -> Either ParseError FileComm
 parseComm = parse (totParser fileP)
 
@@ -32,6 +33,7 @@ totParser p = do whiteSpace languageDef
                  eof
                  return t
 
+-- parser del tipo de dato FileComm. Un programa siempre debe empezar abriendo o creando un archivo
 fileP :: Parser FileComm
 fileP = newFileP
     <|> openFileP
@@ -50,13 +52,15 @@ openFileP = do reserved languageDef "abrir"
                seq <- sequenceOfComm
                return (Open (filename ++ ".csv") seq)
 
+-- dropWhileEnd elimina el sufijo más grande de una lista en la que se cumpla un predicado, que en nuestro caso es isSpace
 str :: Parser String
 str = do x   <- alphaNum   -- alphaNum :: Parser Char. Parsea un caracter del string. No falla si encuentra espacios
          sp  <- many space -- parsea espacios que pueda haber entre palabras
          xs  <- many str   -- se llama recursivamente para parsear cada caracter que compone el string
-         let string = dropWhileEnd isSpace ([x]++(sp)++(concat xs)) -- string con el primer caracter encontrado + espacios y palabras. Le quito los espacios finales
+         let string = dropWhileEnd isSpace ([x]++(sp)++(concat xs)) -- string con el primer caracter encontrado + espacios y palabras. Le quito los espacios finales con dropWhileEnd
          return string
 
+-- devuelve los comandos ya parseados en una lista. El separador de cada comando es un punto y coma
 sequenceOfComm = do list <- (sepBy1 comm' (semi languageDef))
                     return $ (listToSeq list)
 
@@ -85,6 +89,7 @@ updateP = try updateDescriptionP
 cancelP = try cancelDate
           <|> cancelDay
 
+-- dada una lista de comandos parseados, genera el tipo de dato que representa una secuencia de comandos
 listToSeq []     = Skip
 listToSeq [x]    = x
 listToSeq (x:xs) = Seq x (listToSeq xs)
@@ -105,7 +110,7 @@ insertBetweenP = do reserved languageDef "agregar"
                     day2 <- dayP
                     hour <- hourP
                     desc <- str
-                    return (InsertBetween (UTCTime day1 hour) (UTCTime day2 hour) desc)
+                    return (InsertBetween (UTCTime day1 hour) (UTCTime day2 hour) desc) -- devuelvo las dos fechas indicadas para iterar entre ellas
 
 insertAllDaysP :: Parser Comm
 insertAllDaysP = do reserved languageDef "agregar"
@@ -119,7 +124,7 @@ insertAllDaysP = do reserved languageDef "agregar"
                     return (InsertAllDays (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))
                                           hour)
                                           (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)))
-                                          hour) desc)
+                                          hour) desc) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada día dentro del primero
 
 insertWeeklyP :: Parser Comm
 insertWeeklyP = do reserved languageDef "agregar"
@@ -132,7 +137,7 @@ insertWeeklyP = do reserved languageDef "agregar"
                    desc <- str
                    return (InsertWeekly (UTCTime (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01)) hour)
                                         (UTCTime (addGregorianMonthsClip 1 (fromGregorian (fromInteger year) (fromInteger month) (fromInteger 01))) hour)
-                                        desc weekday)
+                                        desc weekday) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada semana dentro del primero
 
 insertMonthlyP :: Parser Comm
 insertMonthlyP = do reserved languageDef "agregar"
@@ -145,14 +150,14 @@ insertMonthlyP = do reserved languageDef "agregar"
                     desc <- str
                     return (InsertMonthly (UTCTime (fromGregorian (fromInteger year)  (fromInteger 1) (fromInteger day)) hour)
                                           (UTCTime (fromGregorian (fromInteger year) (fromInteger 12) (fromInteger day)) hour)
-                                          desc)
+                                          desc) -- devuelvo el primer y último mes del año para poder iterar todo el año
 
 insertFullDay :: Parser Comm
 insertFullDay = do reserved languageDef "agregar"
                    day1 <- dayP
                    reserved languageDef "-f"
                    desc <- str
-                   return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc)
+                   return (InsertFullDay (UTCTime day1 (60*60*60 + 60*60*60)) desc) -- devuelvo la fecha con la hora en 23:59. la hora no importa porque insertamos según el día
 
 selectDayP :: Parser Comm
 selectDayP = do reserved languageDef "ver"
@@ -190,7 +195,7 @@ updateTimeP = do reserved languageDef "modificar"
                  date <- dateP
                  reserved languageDef "-t"
                  newTime <- hourP
-                 return (UpdateTime date (UTCTime (fromGregorian (fromInteger 2020) (fromInteger 01) (fromInteger 01)) newTime)) 
+                 return (UpdateTime date (UTCTime (fromGregorian (fromInteger 2020) (fromInteger 01) (fromInteger 01)) newTime)) -- la fecha no importa porque modificamos la hora
 
 cancelDate :: Parser Comm
 cancelDate = do reserved languageDef "cancelar"
