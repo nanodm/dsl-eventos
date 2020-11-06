@@ -55,6 +55,9 @@ ver [fecha] <br/> **Por ejemplo:** ver 28/10/2020; <br/>
 #### _Ver un evento en una fecha y hora_
 ver [fecha] [hora] <br/> **Por ejemplo:** ver 22/10/2020 13:30; <br/>
 
+#### _Ver eventos entre dos fechas_
+ver [fecha1] -r [fecha2] <br/> **Por ejemplo:** ver 05/01/2020 -r 10/01/2020; <br/>
+
 # Tipos de datos base de nuestro AST
 
 $ ghci AST.hs
