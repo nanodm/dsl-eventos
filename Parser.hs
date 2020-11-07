@@ -76,6 +76,7 @@ insertP = try insertFullDateP
       <|> try insertAllDaysP
       <|> try insertWeeklyP
       <|> try insertMonthlyP 
+      <|> try insertMYP
       <|>     insertFullDay
 
 selectP = try selectFullDateP
@@ -152,6 +153,20 @@ insertMonthlyP = do reserved languageDef "agregar"
                     return (InsertMonthly (UTCTime (makeDay year 01 day) hour)
                                           (UTCTime (makeDay year 12 day) hour)
                                           desc) -- devuelvo el primer y último mes del año para poder iterar todo el año
+
+
+insertMYP :: Parser Comm
+insertMYP =    do reserved languageDef "agregar"
+                  weekday <- str
+                  try (reservedOp languageDef "/")
+                  reserved languageDef "todos"
+                  try (reservedOp languageDef "/")
+                  year <- natural languageDef
+                  hour <- hourP
+                  desc <- str
+                  return (InsertWeekly (UTCTime (makeDay year 01 01) hour) 
+                         (UTCTime (makeDay year 12 31) hour) desc weekday)
+
 
 insertFullDay :: Parser Comm
 insertFullDay = do reserved languageDef "agregar"

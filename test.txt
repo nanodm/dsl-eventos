@@ -10,6 +10,9 @@ ver 05/01/2020 -r 10/01/2020;
 agregar 31/todos/2020 20:00 juntada;
 ver 31/11/2020;
 
+agregar martes/todos/2020 19:00 todos los martes del año;
+ver 09/11/2020;
+
 agregar todos/02/2020 22:00 cena en febrero;
 ver 06/02/2020 22:00;
 ver todos/02/2020;

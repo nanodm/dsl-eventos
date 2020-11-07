@@ -67,6 +67,8 @@ evalComm (InsertAllDays date1 date2 desc) filename = if date1 < date2
 evalComm (InsertMonthly date1 date2 desc) filename = do if date1 < date2
                                                         then insertMonthly date1 date2 desc filename
                                                         else return ()
+
+
 evalComm (InsertFullDay date desc) filename = do
         handle <- openFile filename ReadMode
         (tempName, tempHandle) <- openTempFile "." "temp"
@@ -255,6 +257,12 @@ insertMonthly :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
 insertMonthly date1 date2 desc filename = if date1 <= date2
                                         then do evalComm (Insert date1 desc) filename
                                                 insertMonthly (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
+                                        else    return ()
+
+insertMY :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+insertMY dateI dateF desc filename = if dateI <= dateF
+                                        then do evalComm (Insert dateI desc) filename
+                                                insertWeekly (addOneWeek dateI) dateF desc filename
                                         else    return ()
 
 -- auxiliar para SelectBetween
