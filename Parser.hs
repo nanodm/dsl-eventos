@@ -28,7 +28,7 @@ parseComm = parse (totParser fileP)
 
 -- Funciones para facilitar el testing del parser.
 totParser :: Parser a -> Parser a
-totParser p = do whiteSpace languageDef
+totParser p = do whiteSpace languageDef -- whiteSpace quita los espacios iniciales. Los demás parsers quitan los espacios despues de los tokens
                  t <- p
                  eof
                  return t
