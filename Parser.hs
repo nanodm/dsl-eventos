@@ -128,6 +128,7 @@ insertAllDaysP = do reserved languageDef "agregar"
                                           (UTCTime (addGregorianMonthsClip 1 (makeDay year month 01)) hour)
                                           desc) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada día dentro del primero
 
+-- El siguiente parser inserta un evento en un día específico (por Ej. Martes) de cada semana, durante todo el año
 insertWeeklyP :: Parser Comm
 insertWeeklyP = do reserved languageDef "agregar"
                    weekday <- str
@@ -139,8 +140,9 @@ insertWeeklyP = do reserved languageDef "agregar"
                    desc <- str
                    return (InsertWeekly (UTCTime (makeDay year month 01) hour)
                                         (UTCTime (addGregorianMonthsClip 1 (makeDay year month 01)) hour)
-                                        desc weekday) -- devuelvo el mes indicado y el mes siguiente para poder iterar cada semana dentro del primero
+                                        desc weekday) 
 
+-- El siguiente parser inserta un evento en número de día especifico de cada mes durante todo el año (por Ej. el 31 de cada mes, si el mes tiene menos días se inserta el último día de ese mes, 30, 29 o 28)
 insertMonthlyP :: Parser Comm
 insertMonthlyP = do reserved languageDef "agregar"
                     day <- natural languageDef
@@ -152,7 +154,7 @@ insertMonthlyP = do reserved languageDef "agregar"
                     desc <- str
                     return (InsertMonthly (UTCTime (makeDay year 01 day) hour)
                                           (UTCTime (makeDay year 12 day) hour)
-                                          desc) -- devuelvo el primer y último mes del año para poder iterar todo el año
+                                          desc) 
 
 
 insertMYP :: Parser Comm

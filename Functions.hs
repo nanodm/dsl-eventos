@@ -231,5 +231,6 @@ getTime date = (fromInteger (read(formatTime defaultTimeLocale "%H" date) :: Int
 pDate :: UTCTime -> Day
 pDate date = fromGregorian  (read (formatTime defaultTimeLocale "%Y" date) :: Integer)  (fromInteger (getMonth date)) (fromInteger(read (formatTime defaultTimeLocale "%d" date) :: Integer))
 
+-- para formar la fecha toma el número de día de dateR, el resto de los datos son tomados de dateWr
 utcTimeDayFix :: UTCTime -> UTCTime -> UTCTime
 utcTimeDayFix dateWr dateR = UTCTime (fromGregorian (read (formatTime defaultTimeLocale "%Y" dateWr) :: Integer)  (fromInteger (getMonth dateWr)) (fromInteger(read (formatTime defaultTimeLocale "%d" dateR) :: Integer))) (getTime dateWr)
