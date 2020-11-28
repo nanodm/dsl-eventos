@@ -259,11 +259,12 @@ insertMonthly date1 date2 desc filename = if date1 <= date2
                                                 insertMonthly (utcTimeDayFix (addOneMonth date1) date2) date2 desc filename
                                         else    return ()
 
-insertMY :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
-insertMY dateI dateF desc filename = if dateI <= dateF
-                                        then do evalComm (Insert dateI desc) filename
-                                                insertWeekly (addOneWeek dateI) dateF desc filename
-                                        else    return ()
+
+-- insertMY :: UTCTime -> UTCTime -> Description -> FileName -> IO ()
+-- insertMY dateI dateF desc filename = if dateI <= dateF
+--                                         then do evalComm (Insert dateI desc) filename
+--                                                 insertWeekly (addOneWeek dateI) dateF desc filename
+--                                         else    return ()
 
 -- auxiliar para SelectBetween
 selectBetween :: UTCTime -> UTCTime -> FileName -> IO ()

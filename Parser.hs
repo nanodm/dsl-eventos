@@ -167,7 +167,6 @@ insertMYP =    do reserved languageDef "agregar"
                   return (InsertWeekly (UTCTime (makeDay year 01 01) hour) 
                          (UTCTime (makeDay year 12 31) hour) desc weekday)
 
-
 insertFullDay :: Parser Comm
 insertFullDay = do reserved languageDef "agregar"
                    day1 <- dayP
